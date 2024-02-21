@@ -19,6 +19,6 @@ def random_measurement(d,seed):
 # for i in range(10):
 #     a=random_measurement(3,i)
 #     # print("matrix : ", a)
-#     eigvl,eigvec=np.linalg.eig(a)
+#     eigvl,eigvec=np.linalg.eig(a)     
 #     print("eigenvalue : ",eigvl)
     
