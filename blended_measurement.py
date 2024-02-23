@@ -1,14 +1,5 @@
 import numpy as np
-from scipy.stats import unitary_group, ortho_group
-from random_measurement import random_measurement 
 from scipy.linalg import sqrtm
-
-m=10
-d=2
-measurement_set=[]
-for i in range(m):
-    measurement_set.append(random_measurement(d,i))
-# measurement_set
 
 def blended_measurement(set,d,m):
     E=[]
@@ -16,9 +7,10 @@ def blended_measurement(set,d,m):
     for item in set:
         sum_set+=item
     E_0=sqrtm(1-sum_set/m)
+    E_0=E_0.astype('complex128')
     E.append(E_0)
     for item in set:
-        E.append(sqrtm(item/m))
+        temp=sqrtm(item/m)
+        temp=temp.astype('complex128')
+        E.append(temp)
     return E
-
-# blended_measurement(measurement_set,d)
