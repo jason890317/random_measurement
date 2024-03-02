@@ -6,7 +6,8 @@ def blended_measurement(set,d,m):
     sum_set=np.zeros((d, d), dtype=np.complex128)
     for item in set:
         sum_set+=item
-    E_0=sqrtm(1-sum_set/m)
+    identity=np.eye(d)
+    E_0=sqrtm(identity-sum_set/m)
     E_0=E_0.astype('complex128')
     E.append(E_0)
     for item in set:
