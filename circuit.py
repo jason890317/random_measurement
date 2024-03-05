@@ -1,5 +1,5 @@
 from numpy.linalg import svd
-from qiskit import  Aer,transpile, QuantumRegister, ClassicalRegister, QuantumCircuit, execute, BasicAer
+from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import sqrtm
@@ -187,5 +187,41 @@ def construct_quantum_circuit(povm, state):
     else:
         U = compute_full_rank_unitary(povm)
         qc = full_rank_circuit(povm, state, U)
+    
+    return qc
+
+def blended_circuit(povm, state, U,m):
+    
+    # Define the quantum and classical registers
+    dim_system = state.shape[1] # dimension of state
+    num_system_qubit = int(np.ceil(np.log2(dim_system))) # total number of qubits for system
+
+    system_reg = QuantumRegister(num_system_qubit, name='system') # system register
+
+    N = U.shape[0] # Dimension of the unitary to be applied to system and ancilla
+
+    num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit # total number of qubits for system
+
+    ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla') # ancilla register
+
+    classical_reg = ClassicalRegister(num_ancilla_qubit*m, name='measure') # classical register
+
+    U_gate = UnitaryGate(U, label='U') # unitary gate to be applied between system and ancilla
+    
+    
+    # create the quantum circuit for the system and ancilla
+    qc = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
+    qc.initialize(state[0],system_reg)
+
+    for i in range(0,m):
+
+        # reset ancilla to zero
+        qc.reset(ancilla_reg)
+
+        # append the unitary gate
+        qc.append(U_gate, range(system_reg.size + ancilla_reg.size))
+
+        # measure only the ancilliary qubits
+        qc.measure(ancilla_reg, classical_reg[i*num_ancilla_qubit:i*num_ancilla_qubit+num_ancilla_qubit])
     
     return qc
