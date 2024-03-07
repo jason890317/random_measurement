@@ -51,7 +51,7 @@ def construct_blended_circuit_and_test(blended_set,state,num_shot,implete_times,
   
     return counts
 
-def resolve_blended_result(counts,m):
+def resolve_blended_result_case_2(counts,m):
     for key in counts.keys():
         raw_result=key
     n= int(np.ceil(np.log2(m)))+1
@@ -60,6 +60,25 @@ def resolve_blended_result(counts,m):
     number_counts = Counter(result)
  
     return number_counts
+
+def resolve_blended_result_case_1(counts,m):
+    
+    for key in counts.keys():
+        raw_result=key
+    n= int(np.ceil(np.log2(m)))+1
+    result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+    result=[ int(item, 2) for item in result]
+    
+    for item in result:
+        if item != 0 and item == m:
+            
+            return True
+        elif item != 0 and item !=m:
+            
+            return False
+    
+    
+
 
 def plot_sequential_blended_result(labels,values,m):
     plt.figure(figsize=(20, 6))  # Optional: Adjust the figure size

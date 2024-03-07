@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from scipy.stats import unitary_group
 def generate_normalized_psd_matrix(m,d,high=True):
     """Generate a normalized PSD matrix with eigenvalues between 0 and 1."""
     
@@ -29,3 +30,35 @@ def generate_povm_set_case_2(d, m):
     
     return povm_elements
 
+def generate_povm_by_unitary_case_1(d,m,roh):
+    
+    projector=np.array([[1,0],[0,0]])
+    
+    povm=[]
+    
+    while len(povm)!=m-1:
+        U=unitary_group.rvs(d)
+        temp=U@projector@U.T.conj()
+        if 0.0001<np.trace(temp@roh)<0.2:
+            povm.append(temp)
+    while len(povm)!=m:
+        U=unitary_group.rvs(d)
+        temp=U@projector@U.T.conj()
+        if 1>np.trace(temp@roh)>0.7:
+            povm.append(temp)
+        
+    return povm
+
+def generate_povm_by_unitary_case_2(d,m,roh):
+    
+    projector=np.array([[0,0],[0,1]])
+    
+    povm=[]
+    
+    while len(povm)!=m:
+        U=unitary_group.rvs(d)
+        temp=U@projector@U.T.conj()
+        if 0.0001<np.trace(temp@roh)<0.2/m:
+            povm.append(temp)
+    
+    return povm
