@@ -1,17 +1,16 @@
-from random_measurement import generate_povm_set_case_1,generate_povm_set_case_2, generate_povm_by_unitary_case_1, generate_povm_by_unitary_case_2
-from blended_measurement import blended_measurement
-
-import numpy as np
-import matplotlib.pyplot as plt
-from math import ceil
-
-from tools import print_eigenvalue, show_probability_povm,construct_circuit_and_test,generate_binary_strings,construct_blended_circuit_and_test,resolve_blended_result_case_1,resolve_blended_result_case_2
-
 
 
 
 def event_learning(d,m,case,state,num_shot,test_time,rotation=True,plot=False,print_check=False):
     
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from math import ceil
+
+    from tools import print_eigenvalue, show_probability_povm,construct_circuit_and_test,generate_binary_strings,construct_blended_circuit_and_test,resolve_blended_result_case_1,resolve_blended_result_case_2
+    from random_measurement import generate_povm_set_case_1,generate_povm_set_case_2, generate_povm_by_unitary_case_1, generate_povm_by_unitary_case_2
+    from blended_measurement import blended_measurement
+
     ################### Initialization ######################################################
 
     roh_0=np.outer(state,state.T.conj())                # cauculate the density matrix
