@@ -1,33 +1,27 @@
-import matplotlib.pyplot as plt
-from collections import Counter
-import numpy as np
+import sys
 
-# Example list of numbers, including a very small number
-numbers = [1, 2, 3, 4, 1, 2, 1, 3, 5, 6, 5, 5, 6e-5]
+def print_progress(current, total, bar_length=20):
+    """
+    Prints a progress bar to the console.
+    
+    Parameters:
+        current (int): The current progress value.
+        total (int): The total value when the progress is complete.
+        bar_length (int): The character length of the progress bar.
+    """
+    fraction = current / total
+    arrow = int(fraction * bar_length - 1) * '=' + '>'
+    padding = (bar_length - len(arrow)) * ' '
+    progress_bar = f'\r{current}/{total}: [{arrow}{padding}]'
+    sys.stdout.write(progress_bar)
+    sys.stdout.flush()
 
-# Count the frequency of each number
-number_counts = Counter(numbers)
+# Example usage
+import time
 
-# Separate the numbers and their counts into two lists for plotting
-labels, values = zip(*number_counts.items())
+total = 100
+for i in range(1, total + 1):
+    print_progress(i, total, 20)
+    time.sleep(0.05)  # Simulate work being done
 
-# Convert labels to string to handle very small numbers and ensure they appear on the x-axis
-labels_str = [f'{label:.1e}' if label < 1e-3 else str(label) for label in labels]
-
-# Create the plot
-plt.figure(figsize=(10, 6))  # Adjust the figure size
-plt.bar(labels_str, values, color='skyblue')  # Create a bar chart
-
-# Add title and labels to the plot
-plt.title('Frequency of Each Number')
-plt.xlabel('Number')
-plt.ylabel('Frequency')
-
-# Set the y-axis to a logarithmic scale
-plt.yscale('log')
-
-# Optional: Set y-axis limits if you want to focus on a specific range
-plt.ylim(bottom=1e-4, top=max(values)+10)
-
-# Show the plot
-plt.show()
+print()  # Move to the next line

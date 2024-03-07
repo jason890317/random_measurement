@@ -5,7 +5,7 @@ import circuit as cir
 from itertools import product
 from collections import Counter
 import matplotlib.pyplot as plt
-
+import sys
 def print_eigenvalue(povm):
     for item in povm:
         eigenval,_=np.linalg.eigh(item)
@@ -92,3 +92,12 @@ def plot_sequential_blended_result(labels,values,m):
     # Show the plot
     plt.xticks(range(0, m+1))  # Ensure all numbers are shown on x-axis
     plt.show()
+
+def print_progress(current, total, bar_length=20):
+
+    fraction = current / total
+    arrow = int(fraction * bar_length - 1) * '=' + '>'
+    padding = (bar_length - len(arrow)) * ' '
+    progress_bar = f'\r{current}/{total}: [{arrow}{padding}]'
+    sys.stdout.write(progress_bar)
+    sys.stdout.flush()
