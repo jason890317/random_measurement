@@ -1,11 +1,21 @@
-import numpy as np
-from qiskit import transpile
-from qiskit_aer import Aer
-import circuit as cir
 from itertools import product
 from collections import Counter
+import numpy as np
 import matplotlib.pyplot as plt
 import sys
+
+def generate_random_projector(d):
+    # Generate a random complex vector
+    vec = np.random.rand(d) + 1j * np.random.rand(d)
+    
+    # Normalize the vector
+    vec_normalized = vec / np.linalg.norm(vec)
+    
+    # Construct the projector
+    projector = np.outer(vec_normalized, np.conj(vec_normalized))
+    
+    return projector
+
 
 def generate_random_statevector(d):
     # Generate a random complex vector
@@ -28,16 +38,6 @@ def show_probability_povm(povm,roh_0,print_pro=False):
             print(item)
     return pro
         
-def construct_circuit_and_test(povm,state,num_shot,backend='qasm_simulator'):
-    qc=cir.construct_quantum_circuit(povm,state)
-
-    backend = Aer.get_backend('qasm_simulator')
-    qc=transpile(qc, backend)
-    result = backend.run(qc,shots=num_shot).result()
-    counts = result.get_counts(qc)
- 
-    return counts
-
 
 
 def generate_binary_strings(n):
@@ -49,15 +49,6 @@ def generate_binary_strings(n):
     
     return binary_strings
 
-def construct_blended_circuit_and_test(blended_set,state,num_shot,implete_times,backend='qasm_simulator'):
-    U_blended=cir.compute_full_rank_unitary(blended_set)
-
-    qc=cir.blended_circuit(blended_set,state,U_blended,implete_times)
-    backend = Aer.get_backend('statevector_simulator')
-    result = backend.run(qc,shots=num_shot).result()
-    counts = result.get_counts(qc)
-  
-    return counts
 
 def resolve_blended_result_case_2(counts,m):
     for key in counts.keys():

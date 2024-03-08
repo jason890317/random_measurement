@@ -1,3 +1,5 @@
-env_random
-random
+.ipynb_checkpoints
+.vscode
+__pycache
+.Trash-1000
 density

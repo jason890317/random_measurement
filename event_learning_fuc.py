@@ -1,15 +1,14 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from math import ceil
+from tools import print_eigenvalue, show_probability_povm,generate_binary_strings,resolve_blended_result_case_1,resolve_blended_result_case_2
+from generate_povm import generate_povm_set_case_1,generate_povm_set_case_2, generate_povm_by_unitary_case_1, generate_povm_by_unitary_case_2
+from blended_measurement import blended_measurement
+from circuit import construct_circuit_and_test,construct_blended_circuit_and_test
 
 
-
-def event_learning(d,m,case,state,num_shot,test_time,rotation=True,plot=False,print_check=False):
+def event_learning(d,m,case,state,num_shot,test_time,projector,rotation=True,plot=False,print_check=False,projector_random=True):
     
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from math import ceil
-
-    from tools import print_eigenvalue, show_probability_povm,construct_circuit_and_test,generate_binary_strings,construct_blended_circuit_and_test,resolve_blended_result_case_1,resolve_blended_result_case_2
-    from random_measurement import generate_povm_set_case_1,generate_povm_set_case_2, generate_povm_by_unitary_case_1, generate_povm_by_unitary_case_2
-    from blended_measurement import blended_measurement
 
     ################### Initialization ######################################################
 
@@ -19,13 +18,13 @@ def event_learning(d,m,case,state,num_shot,test_time,rotation=True,plot=False,pr
 
     if case==1:
         if rotation:
-            povm_set = generate_povm_by_unitary_case_1(d,m,roh_0)
+            povm_set = generate_povm_by_unitary_case_1(d,m,projector,roh_0,projector_random)
         else:
             povm_set = generate_povm_set_case_1(d, m)
         
     elif case==2:
         if rotation:
-            povm_set = generate_povm_by_unitary_case_2(d,m,roh_0)
+            povm_set = generate_povm_by_unitary_case_2(d,m,projector,roh_0,projector_random)
         else:
             povm_set = generate_povm_set_case_2(d, m)
     

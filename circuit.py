@@ -6,6 +6,9 @@ from scipy.linalg import sqrtm
 from scipy.linalg import svd
 from qiskit.circuit.library import UnitaryGate
 
+from qiskit import transpile
+from qiskit_aer import Aer
+
 def check_for_rank_one(povm):
     """
     function to check if a povm is a rank-1 povm
@@ -225,3 +228,24 @@ def blended_circuit(povm, state, U,m):
         qc.measure(ancilla_reg, classical_reg[i*num_ancilla_qubit:i*num_ancilla_qubit+num_ancilla_qubit])
     
     return qc
+
+def construct_circuit_and_test(povm,state,num_shot,backend='qasm_simulator'):
+    qc=construct_quantum_circuit(povm,state)
+
+    backend = Aer.get_backend('qasm_simulator')
+    qc=transpile(qc, backend)
+    result = backend.run(qc,shots=num_shot).result()
+    counts = result.get_counts(qc)
+ 
+    return counts
+
+
+def construct_blended_circuit_and_test(blended_set,state,num_shot,implete_times,backend='qasm_simulator'):
+    U_blended=compute_full_rank_unitary(blended_set)
+
+    qc=blended_circuit(blended_set,state,U_blended,implete_times)
+    backend = Aer.get_backend('statevector_simulator')
+    result = backend.run(qc,shots=num_shot).result()
+    counts = result.get_counts(qc)
+  
+    return counts
