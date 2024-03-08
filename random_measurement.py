@@ -9,9 +9,9 @@ def generate_normalized_psd_matrix(m,d,high=True):
     eigenvalues, eigenvectors = np.linalg.eigh(A)
     normalized_eigenvalues=[]
     if high:
-        normalized_eigenvalues=[random.uniform(0.7, 1) for _ in range(2)]
+        normalized_eigenvalues=[random.uniform(0.7, 1) for _ in range(d)]
     else:
-        normalized_eigenvalues=[random.uniform(0.01, 0.2/m) for _ in range(2)]
+        normalized_eigenvalues=[random.uniform(0.01, 0.2/m) for _ in range(d)]
         # print(len(normalized_eigenvalues))
     return eigenvectors @ np.diag(normalized_eigenvalues) @ eigenvectors.conj().T
     

@@ -6,6 +6,14 @@ from itertools import product
 from collections import Counter
 import matplotlib.pyplot as plt
 import sys
+
+def generate_random_statevector(d):
+    # Generate a random complex vector
+    vec = np.random.rand(d) + 1j * np.random.rand(d)
+    # Normalize the vector
+    statevector = vec / np.linalg.norm(vec)
+    return statevector  
+
 def print_eigenvalue(povm):
     for item in povm:
         eigenval,_=np.linalg.eigh(item)
