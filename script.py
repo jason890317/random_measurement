@@ -5,19 +5,19 @@ import matplotlib.pyplot as plt
 import os
 ############################### Initialization ######################################################
 
-d = 128                             # Dimension of the initial state (need to be a power of 2)
+d = 32                             # Dimension of the initial state (need to be a power of 2)
 m_s=[4,8,16,32]                  # the number of elements in the povm measurement
 case_s=[1,2]                       # the case to test
           
 # num_shot=1                  # the shot for sampling in one circuit
 test_time=100                   # the number of times to run the circuit
-rank=90                             # the rank of the projector
+rank=8                             # the rank of the projector
 event_learning_times=10          # run event learning several times 
 
 state_random=True                 # generate the random state
 projector_random=False            #generate the random projector to be the base of the povm
 
-dir_name="d_128_rank_90"       # set the directory saving the plot
+dir_name="d_32_rank_8"       # set the directory saving the plot
 if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
@@ -39,6 +39,7 @@ else:
 
 for case in case_s:
     for m in m_s:
+        print("case: "+str(case)+", m: "+str(m))
         y_thm=[]
         y_exp=[]
         for i in range(event_learning_times):
@@ -46,7 +47,7 @@ for case in case_s:
             y_thm.append(result['theorem'])
             y_exp.append(result['experiemnt'])
             print_progress(i+1,event_learning_times,bar_length=event_learning_times)
-        print()
+            print()
         fig,ax=plt.subplots()
         # print(result)
         x=range(0,event_learning_times)

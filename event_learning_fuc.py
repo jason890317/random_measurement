@@ -68,10 +68,12 @@ def event_learning(d,m,case,state,test_time,projector_case_1,projector_case_2,ro
 
     if case==1:
         
-        epsilon=float(1-povm_set_pro[0])
-        beta=float(sum(povm_set_pro[1:]))
-        at_least_pro=float(((1-epsilon)**3)/(12*(1+beta)))
-        
+        # epsilon=float(1-povm_set_pro[0])
+        # beta=float(sum(povm_set_pro[1:]))
+        # at_least_pro=float(((1-epsilon)**3)/(12*(1+beta)))
+        epsilon=1-povm_set_pro[0]
+        beta=sum(povm_set_pro[1:])
+        at_least_pro=((1-epsilon)**3)/(12*(1+beta))
         if print_check:
             print("   Case 1")
             print("1. epsilon is "+str(epsilon))
@@ -80,8 +82,8 @@ def event_learning(d,m,case,state,test_time,projector_case_1,projector_case_2,ro
 
     elif case==2:
         
-        delta=float(sum(povm_set_pro[:]))
-        
+        # delta=float(sum(povm_set_pro[:]))
+        delta=sum(povm_set_pro[:])
         if print_check:
             print("   Case 2")
             print("1. delta is "+str(delta))

@@ -98,7 +98,7 @@ def plot_sequential_blended_result(labels,values,m):
     plt.show()
 
 def print_progress(current, total, bar_length=20):
-
+    
     fraction = current / total
     arrow = int(fraction * bar_length - 1) * '=' + '>'
     padding = (bar_length - len(arrow)) * ' '

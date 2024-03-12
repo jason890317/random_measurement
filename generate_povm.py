@@ -2,7 +2,7 @@ import numpy as np
 import random
 from scipy.stats import unitary_group
 import time
-
+import sys
 def generate_normalized_psd_matrix(m,d,high=True):
     """Generate a normalized PSD matrix with eigenvalues between 0 and 1."""
     np.random.seed(int(time.time()))
@@ -35,28 +35,52 @@ def generate_povm_set_case_2(d, m):
 def generate_povm_by_unitary_case_1(d,m,projector,roh):
     
     povm=[]
-    
+    seed=int(time.time())
+    len_povm=0
     while len(povm)!=m-1:
+        np.random.seed(seed)
         U=unitary_group.rvs(d)
         temp=U@projector@U.T.conj()
         if 0.0001<np.trace(temp@roh)<0.7:
             povm.append(temp)
+        seed+=1
+        if len_povm!=len(povm):
+            sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
+            sys.stdout.flush()
+            
+        len_povm=len(povm)
     while len(povm)!=m:
+        np.random.seed(seed)
         U=unitary_group.rvs(d)
         temp=U@projector@U.T.conj()
         if 1>np.trace(temp@roh)>0.5:
             povm.append(temp)
-        
+        seed+=1
+        if len_povm!=len(povm):
+            sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
+            sys.stdout.flush()
+            
+        len_povm=len(povm)
+    print()
     return povm
 
 def generate_povm_by_unitary_case_2(d,m,projector,roh):
    
     povm=[]
-    
+    seed=int(time.time())
+    len_povm=0
     while len(povm)!=m:
+        np.random.seed(seed)
         U=unitary_group.rvs(d)
         temp=U@projector@U.T.conj()
-        if 0.0001<np.trace(temp@roh)<0.2/m:
+        if 0.0001<np.trace(temp@roh)<0.5/m:
             povm.append(temp)
+        seed+=1
+        if len_povm!=len(povm):
+            sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
+            sys.stdout.flush()
+            
+        len_povm=len(povm)
     
+    print()
     return povm
