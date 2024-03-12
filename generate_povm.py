@@ -3,6 +3,7 @@ import random
 from scipy.stats import unitary_group
 import time
 import sys
+from tools import generate_rank_n_projector
 def generate_normalized_psd_matrix(m,d,high=True):
     """Generate a normalized PSD matrix with eigenvalues between 0 and 1."""
     np.random.seed(int(time.time()))
@@ -32,16 +33,20 @@ def generate_povm_set_case_2(d, m):
     
     return povm_elements
 
-def generate_povm_by_unitary_case_1(d,m,projector,roh):
+def generate_povm_by_unitary_case_1(d,m,rank_h,rank_l,roh):
     
     povm=[]
     seed=int(time.time())
     len_povm=0
+    
+    projector_high=generate_rank_n_projector(rank_h,d)
+    projector_low=generate_rank_n_projector(rank_l,d)
+    
     while len(povm)!=m-1:
         np.random.seed(seed)
         U=unitary_group.rvs(d)
-        temp=U@projector@U.T.conj()
-        if 0.0001<np.trace(temp@roh)<0.7:
+        temp=U@projector_low@U.T.conj()
+        if 0.0000001<np.trace(temp@roh)<0.5:
             povm.append(temp)
         seed+=1
         if len_povm!=len(povm):
@@ -52,8 +57,8 @@ def generate_povm_by_unitary_case_1(d,m,projector,roh):
     while len(povm)!=m:
         np.random.seed(seed)
         U=unitary_group.rvs(d)
-        temp=U@projector@U.T.conj()
-        if 1>np.trace(temp@roh)>0.5:
+        temp=U@projector_high@U.T.conj()
+        if 1>np.trace(temp@roh)>0.7:
             povm.append(temp)
         seed+=1
         if len_povm!=len(povm):
@@ -64,16 +69,19 @@ def generate_povm_by_unitary_case_1(d,m,projector,roh):
     print()
     return povm
 
-def generate_povm_by_unitary_case_2(d,m,projector,roh):
+def generate_povm_by_unitary_case_2(d,m,rank,roh):
    
     povm=[]
     seed=int(time.time())
     len_povm=0
+    
+    projector=generate_rank_n_projector(rank,d)
+    
     while len(povm)!=m:
         np.random.seed(seed)
         U=unitary_group.rvs(d)
         temp=U@projector@U.T.conj()
-        if 0.0001<np.trace(temp@roh)<0.5/m:
+        if 0.0000001<np.trace(temp@roh)<0.3/m:
             povm.append(temp)
         seed+=1
         if len_povm!=len(povm):

@@ -7,7 +7,7 @@ from blended_measurement import blended_measurement
 from circuit import construct_circuit_and_test,construct_blended_circuit_and_test
 
 
-def event_learning(d,m,case,state,test_time,projector_case_1,projector_case_2,rotation=True,plot=False,print_check=False):
+def event_learning(d,m,case,state,test_time,rank_case_1_high,rank_case_1_low,rank_case_2,rotation=True,plot=False,print_check=False):
     
 
     ################### Initialization ######################################################
@@ -19,14 +19,14 @@ def event_learning(d,m,case,state,test_time,projector_case_1,projector_case_2,ro
     if case==1:
         if rotation:
             
-            povm_set = generate_povm_by_unitary_case_1(d,m,projector_case_1,roh_0)
+            povm_set = generate_povm_by_unitary_case_1(d,m,rank_case_1_high,rank_case_1_low,roh_0)
         else:
             povm_set = generate_povm_set_case_1(d, m)
         
     elif case==2:
         if rotation:
             
-            povm_set = generate_povm_by_unitary_case_2(d,m,projector_case_2,roh_0)
+            povm_set = generate_povm_by_unitary_case_2(d,m,rank_case_2,roh_0)
         else:
             povm_set = generate_povm_set_case_2(d, m)
     
