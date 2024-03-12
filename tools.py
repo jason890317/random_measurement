@@ -3,6 +3,8 @@ from collections import Counter
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import time
+
 
 def generate_random_projector(d):
     # Generate a random complex vector
@@ -75,6 +77,9 @@ def resolve_blended_result_case_1(counts,m):
         elif item != 0 and item !=m:
             
             return False
+        
+        else:
+            return False
     
     
 
@@ -100,3 +105,34 @@ def print_progress(current, total, bar_length=20):
     progress_bar = f'\r{current}/{total}: [{arrow}{padding}]'
     sys.stdout.write(progress_bar)
     sys.stdout.flush()
+    
+
+def generate_rank_n_projector(rank, dim):
+    """
+    Generate an arbitrary rank projector in a given dimension.
+    
+    Parameters:
+    - dim: The dimension of the space.
+    - rank: The rank of the projector (must be <= dim).
+    
+    Returns:
+    - A numpy array representing the projector matrix.
+    """
+    if rank > dim:
+        raise ValueError("Rank cannot be greater than dimension.")
+    
+    # Step 1: Generate random vectors
+    np.random.seed(int(time.time()))
+    random_vectors = np.random.rand(rank, dim)
+    
+    # Step 2: Orthogonalize the vectors using QR decomposition
+    q, _ = np.linalg.qr(random_vectors.T)  # Transpose to get dim x rank matrix
+    
+    # Step 3: Construct the projector by summing outer products of orthonormal vectors
+    projector = np.zeros((dim, dim))
+    for i in range(rank):
+        projector += np.outer(q[:, i], q[:, i].conj())
+    
+    eig,vec=np.linalg.eig(projector)
+    
+    return projector

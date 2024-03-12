@@ -1,11 +1,11 @@
 import numpy as np
 import random
 from scipy.stats import unitary_group
-
+import time
 
 def generate_normalized_psd_matrix(m,d,high=True):
     """Generate a normalized PSD matrix with eigenvalues between 0 and 1."""
-    
+    np.random.seed(int(time.time()))
     A = np.random.rand(d, d) + 1j * np.random.rand(d, d)
     A = A + A.conj().T 
     eigenvalues, eigenvectors = np.linalg.eigh(A)
@@ -39,12 +39,12 @@ def generate_povm_by_unitary_case_1(d,m,projector,roh):
     while len(povm)!=m-1:
         U=unitary_group.rvs(d)
         temp=U@projector@U.T.conj()
-        if 0.0001<np.trace(temp@roh)<0.2:
+        if 0.0001<np.trace(temp@roh)<0.7:
             povm.append(temp)
     while len(povm)!=m:
         U=unitary_group.rvs(d)
         temp=U@projector@U.T.conj()
-        if 1>np.trace(temp@roh)>0.7:
+        if 1>np.trace(temp@roh)>0.5:
             povm.append(temp)
         
     return povm
