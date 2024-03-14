@@ -120,7 +120,9 @@ def event_learning(d,m,case,state,test_time,rank_case_1_high,rank_case_1_low,ran
     ############### Sequential Blend Measurement impletement(simulation) #########################
     counts_set=[]
     for i in range(test_time):
+        print(i)
         counts=construct_blended_circuit_and_test(blended_set,state,1,m)
+        
         counts_set.append(counts)
 
 

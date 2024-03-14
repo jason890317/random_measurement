@@ -5,21 +5,21 @@ import matplotlib.pyplot as plt
 import os
 ############################### Initialization ######################################################
 
-d = 64                             # Dimension of the initial state (need to be a power of 2)
+d = 32                             # Dimension of the initial state (need to be a power of 2)
 m_s=[8,16,32]                  # the number of elements in the povm measurement
-case_s=[2]                       # the case to test
+case_s=[1]                       # the case to test
           
 # num_shot=1                  # the shot for sampling in one circuit
-test_time=100                   # the number of times to run the circuit
-rank_case_1_high=48
-rank_case_1_low= 16 
+test_time=50                   # the number of times to run the circuit
+rank_case_1_high= 28
+rank_case_1_low= 8 
 rank_case_2= 4                    # the rank of the projector
 event_learning_times=10            # run event learning several times 
 
 state_random=True                 # generate the random state
                                 #generate the random projector to be the base of the povm
 
-dir_name="d_64_case_2"       # set the directory saving the plot
+dir_name="d_32_case_1"       # set the directory saving the plot
 if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 

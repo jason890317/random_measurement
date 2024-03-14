@@ -247,5 +247,5 @@ def construct_blended_circuit_and_test(blended_set,state,num_shot,implete_times,
     backend = Aer.get_backend('statevector_simulator')
     result = backend.run(qc,shots=num_shot).result()
     counts = result.get_counts(qc)
-  
+    
     return counts
