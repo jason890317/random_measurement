@@ -55,19 +55,20 @@ def generate_binary_strings(n):
 def resolve_blended_result_case_2(counts,m):
     for key in counts.keys():
         raw_result=key
-    n= int(np.ceil(np.log2(m)))+1
+    n= int(np.log2(m))+1
     result=[raw_result[n*i:(i+1)*n] for i in range(m)]
     result=[ int(item, 2) for item in result]
     number_counts = Counter(result)
- 
+
     return number_counts
 
 def resolve_blended_result_case_1(counts,m):
-    
+    # print(counts)
     for key in counts.keys():
         raw_result=key
-    n= int(np.ceil(np.log2(m)))+1
+    n= int(np.log2(m))+1
     result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+    # print(result)
     result=[ int(item, 2) for item in result]
     
     for item in result:

@@ -3,25 +3,31 @@ from tools import print_progress,generate_random_statevector,generate_random_pro
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import scipy.stats as stats
 ############################### Initialization ######################################################
 
-d = 32                             # Dimension of the initial state (need to be a power of 2)
-m_s=[8,16,32]                  # the number of elements in the povm measurement
-case_s=[1]                       # the case to test
-          
+d = 64                             # Dimension of the initial state (need to be a power of 2)
+m_s=[10,20,30]                  # the number of elements in the povm measurement
+case_s=[2,1]                       # the case to test
+rank_s=[16,32,48]
 # num_shot=1                  # the shot for sampling in one circuit
-test_time=50                   # the number of times to run the circuit
-rank_case_1_high= 28
-rank_case_1_low= 8 
-rank_case_2= 4                    # the rank of the projector
+test_time=100                 # the number of times to run the circuit
 event_learning_times=10            # run event learning several times 
+standard_deviation_num=10
 
-state_random=True                 # generate the random state
+# rank_case_1_high= 4
+# rank_case_1_low= 2 
+# rank_case_2= 2                    # the rank of the projector
+
+
+epson_case_1=0.2
+epson_case_2=0.9
+state_random=False               # generate the random state
                                 #generate the random projector to be the base of the povm
-
-dir_name="d_32_case_1"       # set the directory saving the plot
-if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
+for rank in rank_s:
+    dir_name="d_"+str(d)+"_r_"+str(rank)       # set the directory saving the plot
+    if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
 
 ############################# random state ###########################################################
 
@@ -29,29 +35,46 @@ if not os.path.exists(dir_name):
 if state_random:
     state=np.array([generate_random_statevector(d)])
 else:
-    state=np.array([[0,1]])            # manually initialize the state
-
+    state=np.array([np.hstack((1,np.zeros(d-1)))])           # manually initialize the state
 ############################# multi-run ###############################################################
 
 for case in case_s:
-    for m in m_s:
-        print("case: "+str(case)+", m: "+str(m))
-        y_thm=[]
-        y_exp=[]
-        for i in range(event_learning_times):
-            result=event_learning(d,m,case,state,test_time,rank_case_1_high,rank_case_1_low,rank_case_2)
-            y_thm.append(result['theorem'])
-            y_exp.append(result['experiemnt'])
-            print_progress(i+1,event_learning_times,bar_length=event_learning_times)
-            print()
-        fig,ax=plt.subplots()
-        # print(result)
-        x=range(0,event_learning_times)
-        if case==1:
-            ax.plot(x,y_thm,label="theorem result (at least), rank_high= "+str(rank_case_1_high)+", rank_low= "+str(rank_case_1_low))
-        elif case==2:
-            ax.plot(x,y_thm,label="theorem result (at most), rank= "+str(rank_case_2))
-        ax.plot(x,y_exp,label="experiment result")
-        ax.set_title("Case"+str(case)+","+"m=" +str(m))
-        ax.legend()
-        plt.savefig("./"+dir_name+"/"+"Case"+str(case)+","+"m=" +str(m)+".png")
+    for rank in rank_s:
+        for m in m_s:
+            y_thm=[]
+            y_exp=[]
+            
+            print("case: "+str(case)+", m: "+str(m))
+            for _ in range(event_learning_times):
+                y_temp=[]
+                for i in range(standard_deviation_num):
+                    result=event_learning(d,m,case,state,test_time,rank,epson_case_1,epson_case_2,epson_rotation=True)
+                    y_temp.append(result['experiemnt'])
+                    print_progress(i+1,event_learning_times,bar_length=event_learning_times)
+                    print()
+                print(y_temp)
+                y_thm.append(result['theorem'])
+                y_exp.append(y_temp)
+            means = np.mean(y_exp, axis=1)
+            sem = stats.sem(y_exp, axis=1)
+            confidence = 0.95
+            ci = sem * stats.t.ppf((1 + confidence) / 2., standard_deviation_num - 1)
+            lower_bound=[]
+            for i in range(event_learning_times):
+                if means[i]-ci[i]<0:
+                    lower_bound.append(0)
+                else:
+                    lower_bound.append(means[i]-ci[i])
+            fig,ax=plt.subplots()
+            # print(result)
+            x=range(0,event_learning_times)
+            if case==1:
+                ax.plot(x,y_thm,label="theorem result (at least)")
+                plt.fill_between(x, lower_bound, means + ci, color='blue', alpha=0.2, label='95% Confidence Interval')
+            elif case==2:
+                ax.plot(x,y_thm,label="theorem result (at most)")
+                plt.fill_between(x, lower_bound, means + ci, color='blue', alpha=0.2, label='95% Confidence Interval')
+            ax.plot(x,means,label="experiment result")
+            ax.set_title("Dimension: "+str(d)+", Case"+str(case)+","+" m=" +str(m)+", rank= "+str(rank))
+            ax.legend()
+            plt.savefig("./"+dir_name+"/"+"d="+str(d)+"_Case="+str(case)+"_m=" +str(m)+"_r="+str(rank)+".png")

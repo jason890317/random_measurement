@@ -1,24 +1,14 @@
-import numpy as np
-def generate_random_statevector(d):
-    # Generate a random complex vector
-    vec = np.random.rand(d) + 1j * np.random.rand(d)
-    # Normalize the vector
-    statevector = vec / np.linalg.norm(vec)
-    return statevector  
+import statsmodels.api as sm
 
+# Example: 40 successes out of 100 trials
+successes, trials = 40, 100
+confidence_level = 0.95
 
-def generate_random_projector(d):
-    # Generate a random complex vector
-    vec = np.random.rand(d) + 1j * np.random.rand(d)
-    
-    # Normalize the vector
-    vec_normalized = vec / np.linalg.norm(vec)
-    
-    # Construct the projector
-    projector = np.outer(vec_normalized, np.conj(vec_normalized))
-    
-    return projector
-p=generate_random_projector(5)
-eig,vec=np.linalg.eig(p)
-print(p)
-print(eig)
+# Clopper-Pearson Interval
+cp_interval = sm.stats.proportion_confint(successes, trials, alpha=1-confidence_level, method='binom_test')
+
+# Wilson Score Interval
+wilson_interval = sm.stats.proportion_confint(successes, trials, alpha=1-confidence_level, method='wilson')
+
+print(f"Clopper-Pearson Interval: {cp_interval}")
+print(f"Wilson Score Interval: {wilson_interval}")

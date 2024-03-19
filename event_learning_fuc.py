@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import ceil
 from tools import print_eigenvalue, show_probability_povm,generate_binary_strings,resolve_blended_result_case_1,resolve_blended_result_case_2
-from generate_povm import generate_povm_set_case_1,generate_povm_set_case_2, generate_povm_by_unitary_case_1, generate_povm_by_unitary_case_2
+from generate_povm import generate_povm_set_case_1,generate_povm_set_case_2, generate_povm_by_unitary_case_1, generate_povm_by_unitary_case_2,generate_povm_epson_case_1,generate_povm_epson_case_2
 from blended_measurement import blended_measurement
-from circuit import construct_circuit_and_test,construct_blended_circuit_and_test
+from circuit import construct_circuit_and_test,construct_blended_circuit,test_blended_circuit
 
 
-def event_learning(d,m,case,state,test_time,rank_case_1_high,rank_case_1_low,rank_case_2,rotation=True,plot=False,print_check=False):
+def event_learning(d,m,case,state,test_time,rank,epson_case_1,epson_case_2,epson_rotation=True,plot=False,print_check=False):
     
 
     ################### Initialization ######################################################
@@ -17,19 +17,16 @@ def event_learning(d,m,case,state,test_time,rank_case_1_high,rank_case_1_low,ran
     ################### generate the povm measurement sets ##################################
 
     if case==1:
-        if rotation:
-            
-            povm_set = generate_povm_by_unitary_case_1(d,m,rank_case_1_high,rank_case_1_low,roh_0)
-        else:
-            povm_set = generate_povm_set_case_1(d, m)
+        if epson_rotation:
+            povm_set=generate_povm_epson_case_1(d,m,rank,epson_case_1,roh_0)
+        # else:
+        #     povm_set = generate_povm_by_unitary_case_1(d,m,rank_case_1_high,rank_case_1_low,roh_0)
         
     elif case==2:
-        if rotation:
-            
-            povm_set = generate_povm_by_unitary_case_2(d,m,rank_case_2,roh_0)
-        else:
-            povm_set = generate_povm_set_case_2(d, m)
-    
+        if epson_rotation:
+            povm_set=generate_povm_epson_case_2(d,m,rank,epson_case_2,roh_0)
+        # else:
+        #     povm_set =generate_povm_by_unitary_case_2(d,m,rank_case_2,roh_0)
     ################### cauculate the probability of elements in povm set #################################################
 
     # print_eigenvalue(povm_set)
@@ -119,10 +116,10 @@ def event_learning(d,m,case,state,test_time,rank_case_1_high,rank_case_1_low,ran
 
     ############### Sequential Blend Measurement impletement(simulation) #########################
     counts_set=[]
+    qc=construct_blended_circuit(blended_set,state,m)
     for i in range(test_time):
-        print(i)
-        counts=construct_blended_circuit_and_test(blended_set,state,1,m)
-        
+        print(f'\r{i}', end='', flush=True)
+        counts=test_blended_circuit(qc,1)
         counts_set.append(counts)
 
 

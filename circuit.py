@@ -232,7 +232,7 @@ def blended_circuit(povm, state, U,m):
 def construct_circuit_and_test(povm,state,num_shot,backend='qasm_simulator'):
     qc=construct_quantum_circuit(povm,state)
 
-    backend = Aer.get_backend('qasm_simulator')
+    backend = Aer.get_backend(backend)
     qc=transpile(qc, backend)
     result = backend.run(qc,shots=num_shot).result()
     counts = result.get_counts(qc)
@@ -240,11 +240,16 @@ def construct_circuit_and_test(povm,state,num_shot,backend='qasm_simulator'):
     return counts
 
 
-def construct_blended_circuit_and_test(blended_set,state,num_shot,implete_times,backend='qasm_simulator'):
+def construct_blended_circuit(blended_set,state,implete_times):
+    
     U_blended=compute_full_rank_unitary(blended_set)
-
     qc=blended_circuit(blended_set,state,U_blended,implete_times)
-    backend = Aer.get_backend('statevector_simulator')
+    
+    return qc
+
+def test_blended_circuit(qc,num_shot,backend='qasm_simulator'):
+    
+    backend = Aer.get_backend(backend)
     result = backend.run(qc,shots=num_shot).result()
     counts = result.get_counts(qc)
     
