@@ -107,8 +107,7 @@ def generate_povm_epson_case_1(d,m,rank,epson,roh):
     epson_vector_l /=np.linalg.norm(epson_vector_l)
     
     while len(povm)!=m-1:
-        seed=int(time.time())
-        np.random.seed(seed)
+        
         real_part = np.random.rand(d, d)
         imaginary_part = np.random.rand(d, d)
         A= real_part + 1j * imaginary_part
@@ -118,14 +117,14 @@ def generate_povm_epson_case_1(d,m,rank,epson,roh):
        
         if 0<np.trace(temp@roh)<0.1:
             povm.append(temp)
-        seed+=1
+        
         if len_povm!=len(povm):
             sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
             sys.stdout.flush()
             
         len_povm=len(povm)
     while len(povm)!=m:
-        np.random.seed(seed)
+        
         real_part = np.random.rand(d, d)
         imaginary_part = np.random.rand(d, d)
         A= real_part + 1j * imaginary_part
@@ -134,7 +133,7 @@ def generate_povm_epson_case_1(d,m,rank,epson,roh):
         temp=U@projector@U.T.conj()
         if 1>np.trace(temp@roh)>0.7:
             povm.append(temp)
-        seed+=1
+        
         if len_povm!=len(povm):
             sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
             sys.stdout.flush()
@@ -155,17 +154,16 @@ def generate_povm_epson_case_2(d,m,rank,epson,roh):
     epson_vector /=np.linalg.norm(epson_vector)
     
     while len(povm)!=m:
-        seed=int(time.time())
-        np.random.seed(seed)
+        
         real_part = np.random.rand(d, d)
         imaginary_part = np.random.rand(d, d)
         A= real_part + 1j * imaginary_part
         A[:, 0] = epson_vector
         U, R = np.linalg.qr(A)
         temp=U@projector@U.T.conj()
-        if 0<np.trace(temp@roh)<0.3/m:
+        if 0<np.trace(temp@roh)<0.25/m:
             povm.append(temp)
-        seed+=1
+        
         if len_povm!=len(povm):
             sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
             sys.stdout.flush()

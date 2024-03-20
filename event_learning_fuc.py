@@ -92,20 +92,21 @@ def event_learning(d,m,case,state,test_time,rank,epson_case_1,epson_case_2,epson
 
     ################# test the accepting probability of blended measurement Ei (simulation) #################################################
 
-    # counts=construct_circuit_and_test(blended_set,state,num_shot)
+    # counts=construct_circuit_and_test(blended_set,state,test_time)
 
     # result_blended=[]
 
-    # set_num=generate_binary_strings(int(ceil(np.log2(m)))+1)
+    # set_num=generate_binary_strings(int(np.log2(m))+1)
     # set_num=np.array(list(sorted(set_num)))
 
     # cut=int((len(set_num)/2)+1)
 
     # for item in set_num[0:cut]:
     #     if item in counts.keys():
-    #         result_blended.append(counts[item]/num_shot)
+    #         result_blended.append(counts[item]/test_time)
     #     else:
     #         result_blended.append(0)
+    # print(result_blended)
     # if plot:
     #     fig, ax = plt.subplots()
     #     ax.set_xlabel("blended measurement outcome")
@@ -117,12 +118,26 @@ def event_learning(d,m,case,state,test_time,rank,epson_case_1,epson_case_2,epson
     ############### Sequential Blend Measurement impletement(simulation) #########################
     counts_set=[]
     qc=construct_blended_circuit(blended_set,state,m)
-    for i in range(test_time):
+    
+    ####### without parallelization ##########
+    # for i in range(test_time):
+    #     print(f'\r{i}', end='', flush=True)
+    #     counts=test_blended_circuit(qc,1)
+    #     counts_set.append(counts)
+   
+    ###### with parallelization but not batch
+    # counts_set=test_blended_circuit(qc,test_time)
+    
+    ###### batch ############################
+    for i in range(int(test_time/10)):
         print(f'\r{i}', end='', flush=True)
-        counts=test_blended_circuit(qc,1)
-        counts_set.append(counts)
+        counts=test_blended_circuit(qc,10)
+        for item in counts.items():
+            counts_set.append(item)
+    counts_set=dict(counts_set)
 
-
+   
+    # print(counts_set)
     #################### Dealing with one sequential blended measurement result #########################
 
     # count the appearing time of each outcome
@@ -136,25 +151,28 @@ def event_learning(d,m,case,state,test_time,rank,epson_case_1,epson_case_2,epson
     ################## Check the theorem and the experiment result ######################################
     accept_time=0
     if case == 2:
-        for count in counts_set:
-            number_counts=resolve_blended_result_case_2(count,m)
-            # print(number_counts)
-            labels, values = zip(*number_counts.items())
-            if len(labels)>1:
-                accept_time+=1
+        # for count in counts_set:
+        #     number_counts=resolve_blended_result_case_2(count,m)
+        #     # print(number_counts)
+        #     labels, values = zip(*number_counts.items())
+        #     if len(labels)>1:
+        #         accept_time+=1
+        # experiment=accept_time/test_time
+        # if print_check:
+        #     print("The probability of getting  accept at least one time: "+str(experiment)+"\n"+"The probability at most: "+ str(delta))
+        accept_time=resolve_blended_result_case_2(counts_set,m)
         experiment=accept_time/test_time
-        if print_check:
-            print("The probability of getting  accept at least one time: "+str(experiment)+"\n"+"The probability at most: "+ str(delta))
-        
     elif case == 1:
-        for count in counts_set:
-            # print(count)
-            if resolve_blended_result_case_1(count,m):
-                accept_time+=1
+        # for count in counts_set:
+        #     print(count)
+        #     if resolve_blended_result_case_1(count,m):
+        #         accept_time+=1
+        # print(accept_time)
+        # experiment=accept_time/test_time
+        # if print_check:
+        #     print("The probability of getting the accept at least one time and the accept with high accepting probability: "+str(experiment)+"\n"+"The probability at least: "+str(at_least_pro))
+        accept_time=resolve_blended_result_case_1(counts_set,m)
         experiment=accept_time/test_time
-        if print_check:
-            print("The probability of getting the accept at least one time and the accept with high accepting probability: "+str(experiment)+"\n"+"The probability at least: "+str(at_least_pro))
-    
     ################ Return the result ################################################################
     
     if case==1:
