@@ -7,9 +7,9 @@ import scipy.stats as stats
 ############################### Initialization ######################################################
 
 d = 16                             # Dimension of the initial state (need to be a power of 2)
-m_s=[10,20,30]                  # the number of elements in the povm measurement
-case_s=[1,2]                       # the case to test
-rank_s=[4,8,12]
+m_s=[20,30]                  # the number of elements in the povm measurement
+case_s=[2]                       # the case to test
+rank_s=[12]
 # num_shot=1                  # the shot for sampling in one circuit
 test_time=1000                 # the number of times to run the circuit
 event_learning_times=10            # run event learning several times 
@@ -21,11 +21,11 @@ standard_deviation_num=5
 
 
 epson_case_1=0.2    
-epson_case_2=0.8
+epson_case_2=0.9    
 state_random=False               # generate the random state
                                 #generate the random projector to be the base of the povm
-for rank in rank_s:
-    dir_name="d_"+str(d)+"_r_"+str(rank)       # set the directory saving the plot
+for m in m_s:
+    dir_name="d_"+str(d)+"_m_"+str(m)       # set the directory saving the plot
     if not os.path.exists(dir_name):
             os.makedirs(dir_name)
 
@@ -77,4 +77,4 @@ for case in case_s:
             ax.plot(x,means,label="experiment result")
             ax.set_title("Dimension: "+str(d)+", Case"+str(case)+","+" m=" +str(m)+", rank= "+str(rank))
             ax.legend()
-            plt.savefig("./"+"d_"+str(d)+"_r_"+str(rank)+"/"+"d="+str(d)+"_Case="+str(case)+"_m=" +str(m)+"_r="+str(rank)+".png")
+            plt.savefig("./"+"d_"+str(d)+"_m_"+str(m)+"/"+"d="+str(d)+"_Case="+str(case)+"_m=" +str(m)+"_r="+str(rank)+".png")

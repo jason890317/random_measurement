@@ -251,10 +251,13 @@ def test_blended_circuit(qc,num_shot,backend='qasm_simulator'):
     
     backend_options = {
     'max_parallel_threads': 10, # batch 10
+    'max_memory_mb': 16384,
     }
     backend = Aer.get_backend(backend)
     backend.set_options(**backend_options)
     result = backend.run(qc,shots=num_shot).result()
     counts = result.get_counts(qc)
-    
+#    config = backend.configuration()
+
+ #   print("Max memory (MB):", config)
     return counts
