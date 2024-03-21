@@ -6,10 +6,10 @@ import os
 import scipy.stats as stats
 ############################### Initialization ######################################################
 
-d = 32                             # Dimension of the initial state (need to be a power of 2)
+d = 32                            # Dimension of the initial state (need to be a power of 2)
 m_s=[10,20,30]                  # the number of elements in the povm measurement
 case_s=[1,2]                       # the case to test
-rank_s=[16,24]
+rank_s=[8,16,24]
 # num_shot=1                  # the shot for sampling in one circuit
 test_time=1000                 # the number of times to run the circuit
 event_learning_times=10            # run event learning several times 
@@ -20,9 +20,9 @@ standard_deviation_num=5
 # rank_case_2= 2                    # the rank of the projector
 
 
-epson_case_1=0.2  
-
-epson_case_2=0.9
+pro_case_1_h=0.7
+pro_case_1_l=0.1
+pro_case_2=0.2 #/m 
 state_random=False               # generate the random state
                                 #generate the random projector to be the base of the povm
 for m in m_s:
@@ -49,13 +49,15 @@ for case in case_s:
             for _ in range(event_learning_times):
                 y_temp=[]
                 for i in range(standard_deviation_num):
-                    result=event_learning(d,m,case,state,test_time,rank,epson_case_1,epson_case_2,epson_rotation=True)
+                    result=event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_case_2/m,epson_rotation=True)
                     y_temp.append(result['experiemnt'])
-                    print_progress(i+1,standard_deviation_num,bar_length=event_learning_times)
+                    print_progress(i+1,standard_deviation_num,bar_length=standard_deviation_num)
                     print()
-                print(y_temp)
+                # print(y_temp)
                 y_thm.append(result['theorem'])
                 y_exp.append(y_temp)
+                print_progress(_+1,event_learning_times,bar_length=event_learning_times)
+                print()
             means = np.mean(y_exp, axis=1)
             sem = stats.sem(y_exp, axis=1)
             confidence = 0.95

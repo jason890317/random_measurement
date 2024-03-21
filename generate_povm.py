@@ -94,29 +94,33 @@ def generate_povm_by_unitary_case_2(d,m,rank,roh):
     return povm
 
 
-def generate_povm_epson_case_1(d,m,rank,epson,roh):
+def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
      
     povm=[]
     
     len_povm=0
     projector=np.diag(np.hstack([np.zeros(d-rank), np.ones(rank)]))
     
-    epson_vector_h=np.hstack(((0),np.zeros(d-rank-1),(1),np.zeros(rank-1)))
-    epson_vector_l=np.hstack(((1-epson),np.zeros(d-rank-1),(epson),np.zeros(rank-1)))
-    epson_vector_h /=np.linalg.norm(epson_vector_h)
-    epson_vector_l /=np.linalg.norm(epson_vector_l)
+    
+   
     
     while len(povm)!=m-1:
         
+        epson_l=random.uniform(0,pro_l)
+        epson_vector_l=np.hstack(((np.sqrt(1-epson_l)),np.zeros(d-rank-1),(np.sqrt(epson_l)),np.zeros(rank-1)))
+        epson_vector_l /=np.linalg.norm(epson_vector_l)
         real_part = np.random.rand(d, d)
         imaginary_part = np.random.rand(d, d)
         A= real_part + 1j * imaginary_part
         A[:, 0] = epson_vector_l
+        # print(f'ever A: \n{A}')
         U, R = np.linalg.qr(A)
+        # print(f'every U: \n{U}')
+        # print(f'P: \n{projector}')
         temp=U@projector@U.T.conj()
-       
-        if 0<np.trace(temp@roh)<0.1:
-            povm.append(temp)
+        # print(np.trace(temp@roh))
+        
+        povm.append(temp)
         
         if len_povm!=len(povm):
             sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
@@ -125,14 +129,21 @@ def generate_povm_epson_case_1(d,m,rank,epson,roh):
         len_povm=len(povm)
     while len(povm)!=m:
         
+        epson_h=random.uniform(pro_h,1)
+        epson_vector_h=np.hstack(((np.sqrt(1-epson_h)),np.zeros(d-rank-1),(np.sqrt(epson_h)),np.zeros(rank-1)))
+        epson_vector_h /=np.linalg.norm(epson_vector_h)
         real_part = np.random.rand(d, d)
         imaginary_part = np.random.rand(d, d)
         A= real_part + 1j * imaginary_part
         A[:, 0] = epson_vector_h
+        # print(f'ever A: \n{A}')
         U, R = np.linalg.qr(A)
-        temp=U@projector@U.T.conj()
-        if 1>np.trace(temp@roh)>0.7:
-            povm.append(temp)
+        # print(f'every U: \n{U}')
+        # print(f'P: \n{projector}')
+        temp=U.T.conj()@projector@U
+        # print(f'pro: \n{np.trace(temp@roh)}')
+       
+        povm.append(temp)
         
         if len_povm!=len(povm):
             sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
@@ -143,26 +154,27 @@ def generate_povm_epson_case_1(d,m,rank,epson,roh):
     # show_probability_povm(povm,roh,print_pro=True)
     return povm
 
-def generate_povm_epson_case_2(d,m,rank,epson,roh):
+def generate_povm_epson_case_2(d,m,rank,pro_l,roh):
    
     povm=[]
     
     len_povm=0
+    
+    
     projector=np.diag(np.hstack([np.zeros(d-rank), np.ones(rank)]))
     
-    epson_vector=np.hstack(((epson),np.zeros(d-rank-1),(1-epson),np.zeros(rank-1)))
-    epson_vector /=np.linalg.norm(epson_vector)
-    
     while len(povm)!=m:
-        
+        epson=random.uniform(0,pro_l)
+        epson_vector=np.hstack(((np.sqrt(1-epson)),np.zeros(d-rank-1),(np.sqrt(epson)),np.zeros(rank-1)))
+        epson_vector /=np.linalg.norm(epson_vector)
         real_part = np.random.rand(d, d)
         imaginary_part = np.random.rand(d, d)
         A= real_part + 1j * imaginary_part
         A[:, 0] = epson_vector
         U, R = np.linalg.qr(A)
-        temp=U@projector@U.T.conj()
-        if 0<np.trace(temp@roh)<0.25/m:
-            povm.append(temp)
+        temp=U.T.conj()@projector@U
+        
+        povm.append(temp)
         
         if len_povm!=len(povm):
             sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))

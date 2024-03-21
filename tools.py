@@ -96,18 +96,18 @@ def resolve_blended_result_case_1(counts,m):
     accept_time=0
     n= int(np.log2(m))+1
     for key,val in counts.items():
-        print(f'{key}:{val}')
+        # print(f'{key}:{val}')
         raw_result=key
         result=[raw_result[n*i:(i+1)*n] for i in range(m)]
         result=[ int(item, 2) for item in result]
-        print("result: "+str(result))
+        # print("result: "+str(result))
         for item in result:
             if item != 0 and item == m:
                 accept_time+=val
                 break
             elif item != 0 and item !=m:
                 break
-        print("accept_tiem:"+str(accept_time))
+        # print("accept_tiem:"+str(accept_time))
     return accept_time
 
 
