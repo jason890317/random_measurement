@@ -120,21 +120,21 @@ def event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_c
     qc=construct_blended_circuit(blended_set,state,m)
     
     ####### without parallelization ##########
-    # for i in range(test_time):
-    #     print(f'\r{i}', end='', flush=True)
-    #     counts=test_blended_circuit(qc,1)
-    #     counts_set.append(counts)
+    for i in range(test_time):
+        print(f'\r{i}', end='', flush=True)
+        counts=test_blended_circuit(qc,1)
+        counts_set.append(counts)
    
     ###### with parallelization but not batch
     # counts_set=test_blended_circuit(qc,test_time)
     
     ###### batch ############################
-    for i in range(int(test_time/10)):
-        print(f'\r{i}', end='', flush=True)
-        counts=test_blended_circuit(qc,10)
-        for item in counts.items():
-            counts_set.append(item)
-    counts_set=dict(counts_set)
+    # for i in range(int(test_time/10)):
+    #     print(f'\r{i}', end='', flush=True)
+    #     counts=test_blended_circuit(qc,10)
+    #     for item in counts.items():
+    #         counts_set.append(item)
+    # counts_set=dict(counts_set)
 
    
     # print(counts_set)
@@ -151,28 +151,28 @@ def event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_c
     ################## Check the theorem and the experiment result ######################################
     accept_time=0
     if case == 2:
-        # for count in counts_set:
-        #     number_counts=resolve_blended_result_case_2(count,m)
-        #     # print(number_counts)
-        #     labels, values = zip(*number_counts.items())
-        #     if len(labels)>1:
-        #         accept_time+=1
-        # experiment=accept_time/test_time
-        # if print_check:
-        #     print("The probability of getting  accept at least one time: "+str(experiment)+"\n"+"The probability at most: "+ str(delta))
-        accept_time=resolve_blended_result_case_2(counts_set,m)
+        for count in counts_set:
+            number_counts=resolve_blended_result_case_2(count,m)
+            # print(number_counts)
+            labels, values = zip(*number_counts.items())
+            if len(labels)>1:
+                accept_time+=1
         experiment=accept_time/test_time
+        if print_check:
+            print("The probability of getting  accept at least one time: "+str(experiment)+"\n"+"The probability at most: "+ str(delta))
+        # accept_time=resolve_blended_result_case_2(counts_set,m)
+        # experiment=accept_time/test_time
     elif case == 1:
-        # for count in counts_set:
-        #     print(count)
-        #     if resolve_blended_result_case_1(count,m):
-        #         accept_time+=1
-        # print(accept_time)
-        # experiment=accept_time/test_time
-        # if print_check:
-        #     print("The probability of getting the accept at least one time and the accept with high accepting probability: "+str(experiment)+"\n"+"The probability at least: "+str(at_least_pro))
-        accept_time=resolve_blended_result_case_1(counts_set,m)
+        for count in counts_set:
+            print(count)
+            if resolve_blended_result_case_1(count,m):
+                accept_time+=1
+        print(accept_time)
         experiment=accept_time/test_time
+        if print_check:
+            print("The probability of getting the accept at least one time and the accept with high accepting probability: "+str(experiment)+"\n"+"The probability at least: "+str(at_least_pro))
+        # accept_time=resolve_blended_result_case_1(counts_set,m)
+        # experiment=accept_time/test_time
     ################ Return the result ################################################################
     
     if case==1:

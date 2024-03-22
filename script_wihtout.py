@@ -6,12 +6,12 @@ import os
 import scipy.stats as stats
 ############################### Initialization ######################################################
 
-d = 32                            # Dimension of the initial state (need to be a power of 2)
+d = 16                            # Dimension of the initial state (need to be a power of 2)
 m_s=[10,20,30]                  # the number of elements in the povm measurement
 case_s=[1,2]                       # the case to test
-rank_s=[8,16,24]
+rank_s=[4,8,16]
 # num_shot=1                  # the shot for sampling in one circuit
-test_time=1000                 # the number of times to run the circuit
+test_time=100                 # the number of times to run the circuit
 event_learning_times=10            # run event learning several times 
 standard_deviation_num=5
 
