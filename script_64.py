@@ -6,12 +6,12 @@ import os
 import scipy.stats as stats
 ############################### Initialization ######################################################
 
-d = 16                            # Dimension of the initial state (need to be a power of 2)
+d = 64                            # Dimension of the initial state (need to be a power of 2)
 m_s=[10,20,30]                  # the number of elements in the povm measurement
-case_s=[1,2]                       # the case to test
-rank_s=[4,8,16]
+case_s=[2]                       # the case to test
+rank_s=[16,32,48]
 # num_shot=1                  # the shot for sampling in one circuit
-test_time=100                 # the number of times to run the circuit
+test_time=500                 # the number of times to run the circuit
 event_learning_times=10            # run event learning several times 
 standard_deviation_num=5
 
@@ -21,7 +21,7 @@ standard_deviation_num=5
 
 
 pro_case_1_h=0.7
-pro_case_1_l=0.1
+pro_case_1_l=0.2
 pro_case_2=0.2 #/m 
 state_random=False               # generate the random state
                                 #generate the random projector to be the base of the povm
@@ -50,7 +50,7 @@ for case in case_s:
                 y_temp=[]
                 for i in range(standard_deviation_num):
                     result=event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_case_2/m,epson_rotation=True)
-                    y_temp.append(result['experiemnt'])
+                    y_temp.append(result['experiment'])
                     print_progress(i+1,standard_deviation_num,bar_length=standard_deviation_num)
                     print()
                 # print(y_temp)

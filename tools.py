@@ -6,6 +6,7 @@ import sys
 import time
 
 
+
 def generate_random_projector(d):
     # Generate a random complex vector
     vec = np.random.rand(d) + 1j * np.random.rand(d)
@@ -53,62 +54,62 @@ def generate_binary_strings(n):
 
 
 def resolve_blended_result_case_2(counts,m):
-    for key in counts.keys():
-        raw_result=key
-    n= int(np.log2(m))+1
-    result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-    result=[ int(item, 2) for item in result]
-    number_counts = Counter(result)
-
-    return number_counts
-    # n= int(np.log2(m))+1
-    # accept_time=0
-    # for key,val in counts.items():
+    # for key in counts.keys():
     #     raw_result=key
-    #     result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-    #     result=[ int(item, 2) for item in result]
-    #     number_counts = Counter(result)
-    #     labels, values = zip(*number_counts.items())
-    #     # print(labels)
-    #     if len(labels)>1:
-    #         accept_time+=val
+    # n= int(np.log2(m))+1
+    # result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+    # result=[ int(item, 2) for item in result]
+    # number_counts = Counter(result)
 
-    # return accept_time
+    # return number_counts
+    n= int(np.log2(m))+1
+    accept_time=0
+    for key,val in counts.items():
+        raw_result=key
+        result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+        result=[ int(item, 2) for item in result]
+        number_counts = Counter(result)
+        labels, values = zip(*number_counts.items())
+        # print(labels)
+        if len(labels)>1:
+            accept_time+=val
+
+    return accept_time
 def resolve_blended_result_case_1(counts,m):
     
-    for key in counts.keys():
-        raw_result=key
-    n= int(np.log2(m))+1
-    result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-    
-    result=[ int(item, 2) for item in result]
-    print(result)
-    for item in result:
-        if item != 0 and item == m:
-            
-            return True
-        elif item != 0 and item !=m:
-            
-            return False
-        
-        else:
-            return False
-    # accept_time=0
-    # n= int(np.log2(m))+1
-    # for key,val in counts.items():
-    #     # print(f'{key}:{val}')
+    # for key in counts.keys():
     #     raw_result=key
-    #     result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-    #     result=[ int(item, 2) for item in result]
-    #     # print("result: "+str(result))
-    #     for item in result:
-    #         if item != 0 and item == m:
-    #             accept_time+=val
-    #             break
-    #         elif item != 0 and item !=m:
-    #             break
-    #     # print("accept_tiem:"+str(accept_time))
-    # return accept_time
+    # n= int(np.log2(m))+1
+    # result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+    
+    # result=[ int(item, 2) for item in result]
+    # print(result)
+    # for item in result:
+    #     if item != 0 and item == m:
+            
+    #         return True
+    #     elif item != 0 and item !=m:
+            
+    #         return False
+        
+    #     else:
+    #         return False
+    accept_time=0
+    n= int(np.log2(m))+1
+    for key,val in counts.items():
+        # print(f'{key}:{val}')
+        raw_result=key
+        result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+        result=[ int(item, 2) for item in result]
+        # print("result: "+str(result))
+        for item in result:
+            if item != 0 and item == m:
+                accept_time+=val
+                break
+            elif item != 0 and item !=m:
+                break
+        # print("accept_tiem:"+str(accept_time))
+    return accept_time
 
 
 def plot_sequential_blended_result(labels,values,m):
@@ -163,3 +164,31 @@ def generate_rank_n_projector(rank, dim):
     eig,vec=np.linalg.eig(projector)
     
     return projector
+
+def projector_html(dir_name,rotated_pro,top_num):
+    
+    html_content=""
+    with open(dir_name, 'a') as file:
+        
+        flat_matrix = rotated_pro.flatten()
+        magnitudes = np.abs(flat_matrix)
+        indices_of_largest = np.argpartition(magnitudes, -top_num)[-top_num:]
+        mask = np.zeros_like(magnitudes, dtype=bool)
+        mask[indices_of_largest] = True
+        modified_flat_matrix = np.where(mask, flat_matrix, 0)
+        # print(modified_flat_matrix)
+        # Reshaping back to the original matrix shape
+        modified_matrix = modified_flat_matrix.reshape(rotated_pro.shape)
+    # Iterate through the matrix row by row
+        # rotated_pro=np.abs(rotated_pro)
+        for row in modified_matrix:
+            # Create a string for the row
+            # html_content = html_content+' '.join(f"{np.abs(z):.4f}" for z in row)+"<br>"
+            for z in row:
+                if(z!=0):
+                    html_content=html_content+"<span style='color:red;'>"+f"{np.abs(z):.4f} "+"</span>"
+                else:
+                    html_content=html_content+f"{np.abs(z):.4f} "
+            html_content=html_content+"<br>"
+        html_content="<p>"+html_content+"</p>"
+        file.write(html_content)
