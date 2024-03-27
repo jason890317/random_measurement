@@ -6,10 +6,10 @@ import os
 import scipy.stats as stats
 ############################### Initialization ######################################################
 
-d = 8                           # Dimension of the initial state (need to be a power of 2)
-m_s=[10]                  # the number of elements in the povm measurement
+d = 16                           # Dimension of the initial state (need to be a power of 2)
+m_s=[10,30,50]                  # the number of elements in the povm measurement
 case_s=[1,2]                       # the case to test
-rank_s=[2,4]
+rank_s=[4,8,12]
 # num_shot=1                  # the shot for sampling in one circuit
 test_time=500              # the number of times to run the circuit
 event_learning_times=10            # run event learning several times 
@@ -24,15 +24,19 @@ pro_case_1_h=0.8
 pro_case_1_l=0.1
 pro_case_2=0.01 #/m 
 state_random=False               # generate the random state
+
+top_num=6
+
                                 #generate the random projector to be the base of the povm
 for m in m_s:
     dir_name="d_"+str(d)+"_m_"+str(m)       # set the directory saving the plot
     if not os.path.exists(dir_name):
             os.makedirs(dir_name)
 for case in case_s:
-    for rank in rank_s:
-        with open(dir_name+"_r_"+str(rank)+"_case_"+str(case)+"_projector.html", 'w+') as file:
-                file.write("<html><body>")
+    for m in m_s:
+        for rank in rank_s:
+            with open("d_"+str(d)+"_m_"+str(m)+"_r_"+str(rank)+"_case_"+str(case)+"_projector.html", 'w+') as file:
+                    file.write("<html><body>")
 ############################# random state ###########################################################
 
 
@@ -52,7 +56,7 @@ for case in case_s:
             for _ in range(event_learning_times):
                 y_temp=[]
                 for i in range(standard_deviation_num):
-                    result=event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_case_2/m,epson_rotation=True)
+                    result=event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_case_2/m,top_num,epson_rotation=True)
                     y_temp.append(result['experiment'])
                     print("\n"+str(result['experiment']))
                     print_progress(i+1,standard_deviation_num,bar_length=standard_deviation_num)
@@ -63,7 +67,7 @@ for case in case_s:
                 print_progress(_+1,event_learning_times,bar_length=event_learning_times)
                 print()
                 
-            with open(dir_name+"_r_"+str(rank)+"_case_"+str(case)+"_projector.html", 'a') as file:
+            with open("d_"+str(d)+"_m_"+str(m)+"_r_"+str(rank)+"_case_"+str(case)+"_projector.html", 'a') as file:
                 file.write("</body></html>")
 
 

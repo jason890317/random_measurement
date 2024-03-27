@@ -7,7 +7,7 @@ from blended_measurement import blended_measurement
 from circuit import construct_circuit_and_test,construct_blended_circuit,test_blended_circuit
 
 
-def event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_case_2,epson_rotation=True,plot=False,print_check=False):
+def event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_case_2,top_num,epson_rotation=True,plot=False,print_check=False):
     
 
     ################### Initialization ######################################################
@@ -18,13 +18,13 @@ def event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_c
 
     if case==1:
         if epson_rotation:
-            povm_set=generate_povm_epson_case_1(d,m,rank,pro_h=pro_case_1_h,pro_l=pro_case_1_l,roh=roh_0)
+            povm_set=generate_povm_epson_case_1(d,m,rank,pro_case_1_h,pro_case_1_l,roh_0,top_num)
         # else:
         #     povm_set = generate_povm_by_unitary_case_1(d,m,rank_case_1_high,rank_case_1_low,roh_0)
         
     elif case==2:
         if epson_rotation:
-            povm_set=generate_povm_epson_case_2(d,m,rank,pro_case_2,roh_0)
+            povm_set=generate_povm_epson_case_2(d,m,rank,pro_case_2,roh_0,top_num)
         # else:
         #     povm_set =generate_povm_by_unitary_case_2(d,m,rank_case_2,roh_0)
     ################### cauculate the probability of elements in povm set #################################################

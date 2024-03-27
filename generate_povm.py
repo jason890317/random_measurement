@@ -96,7 +96,7 @@ def generate_povm_set_case_2(d, m):
 #     return povm
 
 
-def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
+def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh,top_num):
      
     povm=[]
     
@@ -124,7 +124,7 @@ def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
         temp=U.T.conj()@projector@U
         # print(np.trace(temp@roh))
         
-        projector_html(dir_name,temp,4)
+        projector_html(dir_name,temp,top_num)
             
 
         povm.append(temp)
@@ -150,7 +150,7 @@ def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
         temp=U.T.conj()@projector@U
         # print(f'pro: \n{np.trace(temp@roh)}')
 
-        projector_html(dir_name,temp,4)
+        projector_html(dir_name,temp,top_num)
             
                 
         povm.append(temp)
@@ -164,7 +164,7 @@ def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
     # show_probability_povm(povm,roh,print_pro=True)
     return povm
 
-def generate_povm_epson_case_2(d,m,rank,pro_l,roh):
+def generate_povm_epson_case_2(d,m,rank,pro_l,roh,top_num):
    
     povm=[]
     
@@ -189,7 +189,7 @@ def generate_povm_epson_case_2(d,m,rank,pro_l,roh):
         povm.append(temp)
         
         
-        projector_html(dir_name,temp,4)
+        projector_html(dir_name,temp,top_num)
         
         if len_povm!=len(povm):
             sys.stdout.write(f"\rpovm : "+str(len_povm+1)+"/"+str(m))
