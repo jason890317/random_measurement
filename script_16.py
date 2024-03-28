@@ -20,8 +20,8 @@ standard_deviation_num=5
 # rank_case_2= 2                    # the rank of the projector
 
 
-pro_case_1_h=0.8
-pro_case_1_l=0.1
+pro_case_1_h=0.9
+pro_case_1_l=0.1 #/m
 pro_case_2=0.01 #/m 
 state_random=False               # generate the random state
 
@@ -56,7 +56,7 @@ for case in case_s:
             for _ in range(event_learning_times):
                 y_temp=[]
                 for i in range(standard_deviation_num):
-                    result=event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l,pro_case_2/m,top_num,epson_rotation=True)
+                    result=event_learning(d,m,case,state,test_time,rank,pro_case_1_h,pro_case_1_l/m,pro_case_2/m,top_num,epson_rotation=True)
                     y_temp.append(result['experiment'])
                     print("\n"+str(result['experiment']))
                     print_progress(i+1,standard_deviation_num,bar_length=standard_deviation_num)
