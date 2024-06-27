@@ -45,7 +45,7 @@ if __name__=="__main__":
             np.save('./measurement_dir/case_2_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy', povm_set)
             
         
-        elif (method=='special_random' or method=="special_blended" or method=="interweave"):
+        elif (method=='special_random' or method=="special_blended" or method=="interweave" or method=="blended_three"):
             
             for i in range(average_time):
                 povm_set.append(generate_povm_epson_case_special(d,m,rank,case_1_high,case_1_low,roh_0))
