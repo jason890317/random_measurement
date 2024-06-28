@@ -2,7 +2,7 @@ import json
 from itertools import product
 
 
-def generate_test_data(d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1_low,case_2_pro,test_time,average_time,case):
+def generate_test_data(copies,d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1_low,case_2_pro,test_time,average_time,case):
     data={"test_data":[]}
     file_path="test_data.json"
     
@@ -37,14 +37,15 @@ def generate_test_data(d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1
     data["rank_s"]=rank_s
     data["gate_num_times"]=gate_num_times
     data["average_time"]=average_time
+    data["copies"]=copies
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
 
 if __name__=="__main__":
 
-    d_s = [16]          
-    m_s=[40,50,60,70,80,90,100]         
+    d_s = [4]          
+    m_s=[10]         
     case=1                     
     rank_s={2:[1],
             4:[2,3],
@@ -55,13 +56,14 @@ if __name__=="__main__":
     test_time=50                     # the number of times to run the circuit
     average_time=30           # run event learning several times (each is indipendnet)
         
+    copies=2
 
     case_1_high=0.9                 # the lower bound of the high accepting probability povm in case 1
     case_1_low=0.1                 # the upper bound of the low accepting probability povm in case 1 (/m)
     case_2_pro=0.01 #/m              # the upper bound of the low accepting probability povm in case 2 (/m)
 
-    gate_num_times=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2]
+    gate_num_times=[1]
 
-    method_s=["interweave","special_blended"]
+    method_s=["special_random"]
     
-    generate_test_data(d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1_low,case_2_pro,test_time,average_time,case)
+    generate_test_data(copies,d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1_low,case_2_pro,test_time,average_time,case)

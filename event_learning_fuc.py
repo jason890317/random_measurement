@@ -8,7 +8,7 @@ from circuit import construct_blended_circuit,test_blended_circuit,random_sequen
 
 from scipy.linalg import sqrtm
 
-def event_learning(d,m,gate_num_times,povm_set,roh_0,case,state,test_time,rank,case_1_high,case_1_low,case_2_pro,method):
+def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time,case_1_high,method):
     
   
     if method=='special_random':

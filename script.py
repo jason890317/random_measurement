@@ -20,7 +20,7 @@ if __name__=="__main__":
     case_2_pro=data["case_2_pro"]
     test_time=data["test_time"]
     average_time=data["average_time"]
-    
+    copies=data["copies"]
     
     
     for test_data in data["test_data"]:
@@ -46,7 +46,7 @@ if __name__=="__main__":
         experiment_raw_data=[]
         theorem_raw_data=[]
         for i in range(average_time):
-            result=event_learning(d,m,gate_num_time,povm_set_m[i],roh_0,case,state,test_time,rank,case_1_high,case_1_low,case_2_pro/m,method)
+            result=event_learning(copies,d,m,gate_num_time,povm_set_m[i],roh_0,case,state,test_time,case_1_high,method)
             print(f'result:{result}')
             experiment_raw_data.append(result["experiment"])
             theorem_raw_data.append(result["theorem"])
