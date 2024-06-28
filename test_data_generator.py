@@ -56,7 +56,7 @@ if __name__=="__main__":
     test_time=50                     # the number of times to run the circuit
     average_time=30           # run event learning several times (each is indipendnet)
         
-    copies=2
+    copies=1
 
     case_1_high=0.9                 # the lower bound of the high accepting probability povm in case 1
     case_1_low=0.1                 # the upper bound of the low accepting probability povm in case 1 (/m)
@@ -64,6 +64,6 @@ if __name__=="__main__":
 
     gate_num_times=[1]
 
-    method_s=["special_blended","interweave","blended_three"]
+    method_s=["special_blended"]
     
     generate_test_data(copies,d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1_low,case_2_pro,test_time,average_time,case)

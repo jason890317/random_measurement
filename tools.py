@@ -113,12 +113,15 @@ def resolve_random_result_case_special(counts,high):
     return(accept_time) 
    
        
-def resolve_blended_result_case_special(counts,m,gate_num_times):
+def resolve_blended_result_case_special(counts_set,m,gate_num_times):
     accept_time=0
+    vote=[0 for i in range(m)]
+    check_array=[0 for i in range(m)]
+    correct = [0 if i <m/2 else 1 for i in range(m)]
     n= int(np.log2(m))+1
-    for key,val in counts.items():
-        # print("origin: "+key)
-        raw_result=key
+    for key in counts_set:
+        # print("origin: "+list(key)[0])
+        raw_result=list(key)[0]
         # print("after: "+raw_result)
         result=[raw_result[n*i:(i+1)*n] for i in range(int(gate_num_times*m))]
         # print(result)
@@ -126,21 +129,26 @@ def resolve_blended_result_case_special(counts,m,gate_num_times):
         # print(result)
         result=result[::-1] 
         
-        print(result)
-        check_array=[-1 for i in range(m)]
-        correct = [0 if i <m/2 else 1 for i in range(m)]
-        print(correct)
-        for i in range(len(result)):
-            if result[i]!=0:
-                check_array[result[i]-1]=1
+        # print(result)
+
+        for item in result:
+            if item!=0:
+                vote[item-1]+=1
+        
+        # for i in range(len(result)):
+        #     if result[i]!=0:
+        #         check_array[result[i]-1]=1
                     
-        for i in range(len(check_array)):
-            if check_array[i]==-1:
-                check_array[i]=0
-                
-        print(check_array)
-        xor_result = [a ^ b for a, b in zip(check_array, correct)]
-        accept_time=xor_result.count(0)
+        # for i in range(len(check_array)):
+        #     if check_array[i]==-1:
+        #         check_array[i]=0
+    # print(vote)
+    for item in top_half_indices(vote):
+        check_array[item]=1
+    # print(check_array)
+    # print(correct)
+    xor_result = [a ^ b for a, b in zip(check_array, correct)]
+    accept_time=xor_result.count(0)
         
     return accept_time
 

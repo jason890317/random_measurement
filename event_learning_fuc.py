@@ -31,12 +31,17 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         
         blended_set=blended_measurement(povm_set,d,m)
         blended_set=[ item@item.T.conj() for item in blended_set]
-        povm_set_pro=show_probability_povm(blended_set,roh_0,False)
-        qc=construct_blended_circuit(blended_set,state,int(gate_num_times*m))
+        # povm_set_pro=show_probability_povm(blended_set,roh_0,False)
         
-        # print(high)
-        counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
-        accept_time=resolve_blended_result_case_special(counts,m,gate_num_times)
+        counts_set=[]
+        for _ in range(copies):    
+            qc=construct_blended_circuit(blended_set,state,int(gate_num_times*m))
+            
+            # print(high)
+            counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+            counts_set.append(counts)
+            
+        accept_time=resolve_blended_result_case_special(counts_set,m,gate_num_times)
         
         # accept_time=resolve_random_result_case_special(counts,high)
         
@@ -47,7 +52,7 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         
         # povm_set_pro=show_probability_povm(povm_set,roh_0,True)
         accept_time=0
-        povm_set_pro=show_probability_povm(povm_set,roh_0,True)
+        # povm_set_pro=show_probability_povm(povm_set,roh_0,True)
         blended_set=blended_measurement(povm_set,d,m)
         blended_set=[ item@item.T.conj() for item in blended_set]
         blended_set_inv=blended_measurement_inverse(povm_set,d,m)
