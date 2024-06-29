@@ -10,7 +10,7 @@ if __name__=="__main__":
     now = datetime.datetime.now()
     date_time = now.strftime("%m_%d_%H_%M_%S")
     
-    file_path="result_"+date_time+".json"
+    file_path="result_json/result_"+date_time+".json"
     
     with open('test_data.json', 'r') as file:
         data = json.load(file)
