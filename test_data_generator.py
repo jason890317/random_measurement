@@ -7,7 +7,7 @@ def generate_test_data(copies_s,d_s,m_s,rank_s,gate_num_times,method_s,case_1_hi
     file_path="test_data.json"
     
     # Define methods that require special handling
-    special_methods = {"interweave", "special_blended", "blended_three"}
+    special_methods = {"interweave", "special_blended", "blended_three","classical_shadow"}
 
     # Iterate through products of methods, m values, and ranks
     for d in d_s:
@@ -22,7 +22,7 @@ def generate_test_data(copies_s,d_s,m_s,rank_s,gate_num_times,method_s,case_1_hi
                 copies = copies_s  # Assume copies_s is defined or fetched accordingly
                 
                 # Handle specific methods differently
-                if method != "blended_three":
+                if method =="interweave" or method=="special_blended":
                     gate_num_time = gate_num_times  # Assume gate_num_times is defined
                 
             # Append to test data for all conditions handled above
@@ -57,7 +57,7 @@ if __name__=="__main__":
     
 
     d_s = [4]          
-    m_s=[10]         
+    m_s=[10,20,30]         
     case=1                     
     rank_s={2:[1],
             4:[2,3],
@@ -74,8 +74,8 @@ if __name__=="__main__":
     case_1_low=0.1                 # the upper bound of the low accepting probability povm in case 1 (/m)
     case_2_pro=0.01 #/m              # the upper bound of the low accepting probability povm in case 2 (/m)
 
-    gate_num_times=[1]
+    gate_num_times=[0.4,0.6,0.8,1]
 
-    method_s=["blended_three","blended","random","special_blended","special_random","interweave"]
+    method_s=["classical_shadow","blended_three","blended","random","special_blended","special_random","interweave"]
     
     generate_test_data(copies_s,d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1_low,case_2_pro,test_time,average_time,case)

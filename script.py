@@ -1,4 +1,5 @@
 from event_learning_fuc import event_learning
+from classical_shadow import classical_shadow
 from tools import print_progress
 import numpy as np
 import datetime
@@ -38,21 +39,35 @@ if __name__=="__main__":
         copies=test_data["copies"]
         gate_num_time=test_data["gate_num_time"]
         
-        if method=="special_blended" or method=="special_random" or method=="interweave" or method=="blended_three":
+        if method=="special_blended" or method=="special_random" or method=="interweave" or method=="blended_three" or method=="classical_shadow":
             povm_set_m=np.load('./measurement_dir/special'+'_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy')
         else:
             povm_set_m=np.load('./measurement_dir/case_'+str(case)+'_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy')
             
         experiment_raw_data=[]
         theorem_raw_data=[]
-        for i in range(average_time):
-            result=event_learning(copies,d,m,gate_num_time,povm_set_m[i],roh_0,case,state,test_time,case_1_high,method)
-            print(f'result:{result}')
-            experiment_raw_data.append(result["experiment"])
-            theorem_raw_data.append(result["theorem"])
-            print("\n"+str(result['experiment']))
-            print_progress(i+1,average_time,bar_length=average_time)
-            print()
+        
+        if method=="classical_shadow":
+            
+            for i in range(average_time):
+                result=classical_shadow(copies,d,m,povm_set_m[i],state)
+                print(f'result:{result}')
+                experiment_raw_data.append(result["experiment"])
+                theorem_raw_data.append(result["theorem"])
+                print("\n"+str(result['experiment']))
+                print_progress(i+1,average_time,bar_length=average_time)
+                print()
+            
+            
+        else:
+            for i in range(average_time):
+                result=event_learning(copies,d,m,gate_num_time,povm_set_m[i],roh_0,case,state,test_time,case_1_high,method)
+                print(f'result:{result}')
+                experiment_raw_data.append(result["experiment"])
+                theorem_raw_data.append(result["theorem"])
+                print("\n"+str(result['experiment']))
+                print_progress(i+1,average_time,bar_length=average_time)
+                print()
         test_data["result"]={}
         test_data["result"]["experiment"]=np.mean(experiment_raw_data)
         test_data["result"]["theorem"]=np.mean(theorem_raw_data)

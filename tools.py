@@ -318,3 +318,51 @@ def generate_permutations(m, num):
     
     # print(sampled_permutations)
     return sampled_permutations
+
+def random_unitary(d):
+    
+    real_part = np.random.rand(d, d)
+    imaginary_part = np.random.rand(d, d)
+    A= real_part + 1j * imaginary_part
+    U, _ = np.linalg.qr(A)
+    # print(U)
+    return U
+def split_shadow_median(measurements, classical_shadow_set,K):
+    
+    # print(classical_shadow_set)
+    N=len(classical_shadow_set)
+    splited_shadow=np.array_split(classical_shadow_set, K)
+    # print(splited_shadow)
+    
+    means_splited_shadow=[]
+    
+    for item in splited_shadow:
+        sum=0
+        for copy in item:
+            sum+=copy
+        # print(sum)
+        mean=sum/(int(N/K))
+        # print(mean)
+        means_splited_shadow.append(mean)
+    
+    # for item in means_splited_shadow:
+    
+    #     print("trace :"+str(np.trace(abs(item))))
+    probability_set_all_shadow=[[] for i in range(len(measurements)) ]
+    
+    for i in range(len(measurements)):
+        for j in range(K):
+            probability_set_all_shadow[i].append(abs(np.trace(measurements[i]@means_splited_shadow[j])))
+    
+    output=[]
+    
+    for item in probability_set_all_shadow:
+        # print(item)
+        median=np.median(item)
+        # print(median)
+        indices = np.where(item == median)[0]
+        output.append(median)
+    for item in output:
+        print(item)
+        
+    return output
