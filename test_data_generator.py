@@ -64,6 +64,6 @@ if __name__=="__main__":
 
     gate_num_times=[1]
 
-    method_s=["special_blended"]
+    method_s=["blended_three"]
     
     generate_test_data(copies,d_s,m_s,rank_s,gate_num_times,method_s,case_1_high,case_1_low,case_2_pro,test_time,average_time,case)

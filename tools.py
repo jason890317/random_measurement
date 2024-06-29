@@ -152,12 +152,15 @@ def resolve_blended_result_case_special(counts_set,m,gate_num_times):
         
     return accept_time
 
-def resolve_blended_result_case_interweave(counts,m,get_num_times):
+def resolve_blended_result_case_interweave(counts_set,m,get_num_times):
     accept_time=0
     n= int(np.log2(m))+1
-    for key,val in counts.items():
+    check_array=[-1 for i in range(m)]
+    correct = [0 if i <m/2 else 1 for i in range(m)]
+    vote=[0 for _ in range(m) ]
+    for key in counts_set:
         # print("origin: "+key)
-        raw_result=key
+        raw_result=list(key)[0]
         # print("after: "+raw_result)
         result=[raw_result[n*i:(i+1)*n] for i in range(int(get_num_times*m))]
         # print(result)
@@ -167,41 +170,51 @@ def resolve_blended_result_case_interweave(counts,m,get_num_times):
         
         print(result)
         
-        check_array=[-1 for i in range(m)]
-        correct = [0 if i <m/2 else 1 for i in range(m)]
-        print(correct)
+        
         for i in range(len(result)):
             if result[i]!=0:
                 if i%2==0 and check_array[result[i]-1]==-1:
-                    check_array[result[i]-1]=0
+                    # check_array[result[i]-1]=0
+                    vote[result[i]-1]-=1
                 elif check_array[result[i]-1]==-1:
-                    check_array[result[i]-1]=1
-        for i in range(len(check_array)):
-            if(check_array[i]==-1):
-                check_array[i]=random.choice([0,1])
-        print(check_array)
-        xor_result = [a ^ b for a, b in zip(check_array, correct)]
-        accept_time=xor_result.count(0)
+                    # check_array[result[i]-1]=1
+                    vote[result[i]-1]+=1
+    
+    for i in range(len(vote)):
+        if(vote[i]==0):
+            check_array[i]=random.choice([0,1])
+        elif(vote[i]>0):
+            check_array[i]=1
+        elif(vote[i]<0):
+            check_array[i]=0
+    print(vote)
+    print(check_array)
+    # print(check_array)
+    xor_result = [a ^ b for a, b in zip(check_array, correct)]
+    accept_time=xor_result.count(0)
     return accept_time
 
 
-def resolve_blended_three_result(counts,m,permutation,table,round,special=True):
-    keys=list(counts.keys())[0]
-                    
-    # print(keys)
-    result=[ int(keys[2*i:(i+1)*2],2) for i in range(round)]
-    result=result[::-1]
+def resolve_blended_three_result(counts_set,m,permutation,round,special=True):
     
-    # print("result: "+ str(result))
-    for i in range(len(result)):
-        if result[i]==1:
-            for j in range(len(permutation[i])):
-                if permutation[i][j]==1:
-                    table[j]+=1
-        elif result[i]==2:
-            for j in range(len(permutation[i])):
-                if permutation[i][j]==2:
-                    table[j]+=1
+    table=[0]*m
+    for key in counts_set:
+        keys=list(key)[0]
+                        
+        # print(keys)
+        result=[ int(keys[2*i:(i+1)*2],2) for i in range(round)]
+        result=result[::-1]
+        
+        # print("result: "+ str(result))
+        for i in range(len(result)):
+            if result[i]==1:
+                for j in range(len(permutation[i])):
+                    if permutation[i][j]==1:
+                        table[j]+=1
+            elif result[i]==2:
+                for j in range(len(permutation[i])):
+                    if permutation[i][j]==2:
+                        table[j]+=1
     if not special:
         # print(table)
         max_index = np.argmax(table)
@@ -213,7 +226,7 @@ def resolve_blended_three_result(counts,m,permutation,table,round,special=True):
             # print(table)
         
     else:
-        # print(table)
+        print(table)
         
         check_array=[-1 for i in range(m)]
         correct = [0 if i <m/2 else 1 for i in range(m)]

@@ -59,11 +59,15 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         blended_set_inv=[ item@item.T.conj() for item in blended_set_inv]
         
         # povm_set_pro=show_probability_povm(blended_set,roh_0,False)
-        qc=construct_blended_circuit_inverse(blended_set,blended_set_inv,state,int(gate_num_times*m))
-        # print(high)
-        counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
-        # print(counts)
-        accept_time=resolve_blended_result_case_interweave(counts,m,gate_num_times)
+        counts_set=[]
+        for _ in range(copies):
+            qc=construct_blended_circuit_inverse(blended_set,blended_set_inv,state,int(gate_num_times*m))
+            # print(high)
+            counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+            #print(counts)
+            counts_set.append(counts)
+            
+        accept_time=resolve_blended_result_case_interweave(counts_set,m,gate_num_times)
          
         experiment=accept_time/m   
     
@@ -71,7 +75,7 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
     
     if method == "blended_three":
         
-        table=[0]*m
+        
         permutation=generate_permutations(m,int(5*m))
         permutation = [list(t) for t in permutation]
         # print(permutation)
@@ -111,10 +115,13 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         # for item in three_outcome_blended_set:
         #     show_probability_povm(item,roh_0,True)
         #     print()
-        qc=construct_blended_three_outcome_circuit(three_outcome_blended_set,state,int(5*m),m)
-        counts=test_blended_circuit(qc,1)
-
-        accept_time=resolve_blended_three_result(counts,m,permutation,table,int(5*m))
+        counts_set=[]
+        for _ in range(copies):
+            qc=construct_blended_three_outcome_circuit(three_outcome_blended_set,state,int(5*m),m)
+            counts=test_blended_circuit(qc,1)
+            counts_set.append(counts)
+            # print(counts)
+        accept_time=resolve_blended_three_result(counts_set,m,permutation,int(5*m))
         experiment=accept_time/m
         
     
