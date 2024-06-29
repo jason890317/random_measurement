@@ -20,7 +20,7 @@ if __name__=="__main__":
     case_2_pro=data["case_2_pro"]
     test_time=data["test_time"]
     average_time=data["average_time"]
-    copies=data["copies"]
+    
     
     
     for test_data in data["test_data"]:
@@ -35,7 +35,7 @@ if __name__=="__main__":
         d=test_data["d"]
         m=test_data["m"]
         rank=test_data["rank"]
-        
+        copies=test_data["copies"]
         gate_num_time=test_data["gate_num_time"]
         
         if method=="special_blended" or method=="special_random" or method=="interweave" or method=="blended_three":
