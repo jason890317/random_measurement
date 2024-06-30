@@ -211,7 +211,7 @@ if __name__=="__main__":
     
     # ####################################################################################################################
     
-    # cof_s=[0.4,0.6,0.8,1.0]
+    # cof_s=[0.2,0.4,0.6,0.8,1.0]
     # for cof in cof_s:
     #     filtered_df = pd_data[(pd_data["gate_num_time"]==cof) &((pd_data['method'] == 'special_blended') | (pd_data['method'] =='interweave') )]
     
@@ -322,3 +322,61 @@ if __name__=="__main__":
     #     ax.legend()
         
     #     plt.savefig(save_dir+"/"+"cofs_m_"+str(m)+"_copies_"+str(name[1])+".png")
+    
+    ######################################################################################################
+    
+    
+    
+    filtered_df = pd_data[(pd_data["gate_num_time"]==1.0) &((pd_data['method'] == 'special_blended') | (pd_data['method'] =='interweave')  | (pd_data['method'] =='blended_three') | (pd_data['method'] =='classical_shadow'))]
+
+    # print(filtered_df)
+    grouped = filtered_df.groupby(['d','copies'])
+    
+    
+    for name,group in grouped:
+        # print("######################")
+        method_plot=[]
+        method=[]
+        d_group=group.groupby(['method'])
+        for sub_name,sub_group in d_group:
+            # print(sub_group)
+            # print()
+            exp=[]
+            m_s=[]
+            m_group=sub_group.groupby('m')
+            
+            for sub_sub_name, sub_sub_group in m_group:
+                
+                take_average_exp=[]
+                take_average_thm=[]
+                for item in sub_sub_group.values:
+                    
+                    take_average_exp.append(item[7]['experiment'])
+                    take_average_thm.append(item[7]['theorem'])
+                
+                exp.append(np.mean(take_average_exp))
+                m_s.append(sub_sub_name)
+          
+            method_plot.append(exp)
+        
+            method.append(sub_name[0])
+        
+        
+        fig,ax=plt.subplots()
+        plt.xticks(range(len(m_s)),labels=m_s)
+        plt.yticks(np.arange(0, 1.2, 0.05))
+        
+        
+        ax.plot(range(len(m_s)),[0.5]*len(exp),label="50%")
+        plt.ylim(0, 1)
+        
+        for method_name, plot in zip(method,method_plot):
+            ax.plot(range(len(m_s)),plot,label=method_name)
+        
+        ax.set_title("d_"+str(name[0])+"_copies_"+str(name[1]))
+        ax.set_xlabel("the different cofs")
+        ax.set_ylabel("Success Probability")
+        ax.legend()
+        
+        plt.savefig(save_dir+"/"+"d_m_"+str(name[0])+"_copies_"+str(name[1])+".png")
+    
