@@ -16,7 +16,7 @@ def validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods):
         if method not in total_methods:
             raise ValueError(f"Method {method} is not a valid method.")
 
-def generate_test_entries(d_s, m_s, rank_s, gate_num_times, method_s, copies_s, special_methods):
+def generate_test_entries(d_s, m_s, rank_s, gate_num_times, case,method_s, copies_s, special_methods):
     """ Generate individual test entries based on the provided parameters. """
     test_data = []
     for d in d_s:
@@ -35,7 +35,8 @@ def generate_test_entries(d_s, m_s, rank_s, gate_num_times, method_s, copies_s, 
                         "rank": rank,
                         "gate_num_time": time,
                         "method": method,
-                        "copies": copy
+                        "copies": copy,
+                        "case":case
                     })
     return test_data
 
@@ -45,14 +46,14 @@ def save_data_to_json(file_path, data):
         json.dump(data, file, indent=4)
 
 def main():
-    d_s = [16]          
-    m_s = [10,20,30,40,50,60,70,80,90,100]         
-    gate_num_times = [0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2]
+    d_s = [4]          
+    m_s = [10,20,30]         
+    gate_num_times = [1]
     total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "blended", "random"}
     method_s = ["special_blended", "classical_shadow", "blended_three", "interweave", "special_random", "random", "blended"]
-    copies_s = [1, 3, 5]
+    copies_s = [1, 2]
     special_methods = {"interweave", "special_blended", "blended_three", "classical_shadow"}
-    rank_s = {2:[1], 4:[2,3], 8:[4], 16:[7,8,9], 32:[16]}
+    rank_s = {2:[1], 4:[2], 8:[4], 16:[7,8,9], 32:[16]}
     file_path = "test_data.json"
 
     case_1_high = 0.9                 
@@ -63,7 +64,7 @@ def main():
     case = 1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)
-    test_data = generate_test_entries(d_s, m_s, rank_s, gate_num_times, method_s, copies_s, special_methods)
+    test_data = generate_test_entries(d_s, m_s, rank_s, gate_num_times,case, method_s, copies_s, special_methods)
     
     data = {
         "test_data": test_data,
