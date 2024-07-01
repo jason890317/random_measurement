@@ -56,10 +56,12 @@ if __name__ == "__main__":
         # Select the appropriate POVM generation function based on the method and case
         if method in ["blended", "random"]:
             generation_function = generate_povm_epson_case_1 if case == 1 else generate_povm_epson_case_2
+            generation_args=(d, m, rank, case_1_high, case_1_low, roh_0) if case == 1 else (d,m,rank,case_2_pro,roh_0)
         elif method in ['special_random', 'special_blended', 'interweave', 'blended_three','classical_shadow']:
             generation_function = generate_povm_epson_case_special
+            generation_args=(d, m, rank, case_1_high, case_1_low, roh_0)
         else:
             continue  # Skip if the method is not recognized
 
         # Generate and save the POVM data if it doesn't exist
-        generate_and_save_povm(file_path, generation_function, (d, m, rank, case_1_high, case_1_low, roh_0))
+        generate_and_save_povm(file_path, generation_function, generation_args)

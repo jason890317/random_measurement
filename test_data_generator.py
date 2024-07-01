@@ -50,8 +50,8 @@ def main():
     m_s = [10,20,30]         
     gate_num_times = [1]
     total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "blended", "random"}
-    method_s = ["special_blended", "classical_shadow", "blended_three", "interweave", "special_random", "random", "blended"]
-    copies_s = [1, 2]
+    method_s = ["random", "blended"]
+    copies_s = [1]
     special_methods = {"interweave", "special_blended", "blended_three", "classical_shadow"}
     rank_s = {2:[1], 4:[2], 8:[4], 16:[7,8,9], 32:[16]}
     file_path = "test_data.json"
@@ -61,7 +61,7 @@ def main():
     case_2_pro = 0.01
     test_time = 50                     
     average_time = 30          
-    case = 1
+    case = 2
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)
     test_data = generate_test_entries(d_s, m_s, rank_s, gate_num_times,case, method_s, copies_s, special_methods)
