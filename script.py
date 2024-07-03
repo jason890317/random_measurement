@@ -47,27 +47,19 @@ if __name__=="__main__":
         experiment_raw_data=[]
         theorem_raw_data=[]
         
-        if method=="classical_shadow":
+        excuted_function=classical_shadow if method=="classical_shadow" else event_learning
+        
+        
+        for i in range(average_time):
+            function_arg=(copies,d,m,povm_set_m[i],state) if method=="classical_shadow" else (copies,d,m,gate_num_time,povm_set_m[i],roh_0,case,state,test_time,case_1_high,method)
+            result=excuted_function(*function_arg)
+            print(f'result:{result}')
+            experiment_raw_data.append(result["experiment"])
+            theorem_raw_data.append(result["theorem"])
+            print("\n"+str(result['experiment']))
+            print_progress(i+1,average_time,bar_length=average_time)
+            print()
             
-            for i in range(average_time):
-                result=classical_shadow(copies,d,m,povm_set_m[i],state)
-                print(f'result:{result}')
-                experiment_raw_data.append(result["experiment"])
-                theorem_raw_data.append(result["theorem"])
-                print("\n"+str(result['experiment']))
-                print_progress(i+1,average_time,bar_length=average_time)
-                print()
-            
-            
-        else:
-            for i in range(average_time):
-                result=event_learning(copies,d,m,gate_num_time,povm_set_m[i],roh_0,case,state,test_time,case_1_high,method)
-                print(f'result:{result}')
-                experiment_raw_data.append(result["experiment"])
-                theorem_raw_data.append(result["theorem"])
-                print("\n"+str(result['experiment']))
-                print_progress(i+1,average_time,bar_length=average_time)
-                print()
         test_data["result"]={}
         test_data["result"]["experiment"]=np.mean(experiment_raw_data)
         test_data["result"]["theorem"]=np.mean(theorem_raw_data)
