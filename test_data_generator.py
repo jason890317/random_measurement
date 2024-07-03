@@ -50,7 +50,7 @@ def main():
     m_s = [10,20,30]         
     gate_num_times = [1]
     total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "blended", "random"}
-    method_s = ["random", "blended"]
+    method_s = ["blended_three", "blended"]
     copies_s = [1]
     special_methods = {"interweave", "special_blended", "blended_three", "classical_shadow"}
     rank_s = {2:[1], 4:[2], 8:[4], 16:[7,8,9], 32:[16]}
