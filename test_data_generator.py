@@ -27,17 +27,28 @@ def generate_test_entries(d_s, m_s, rank_s, gate_num_times, case,method_s, copie
                 copies = copies_s
                 if method in ["interweave", "special_blended"]:
                     gate_num_time = gate_num_times
-            for copy in (copies if isinstance(copies, list) else [copies]):
-                for time in (gate_num_time if isinstance(gate_num_time, list) else [gate_num_time]):
+            for time in (gate_num_time if isinstance(gate_num_time, list) else [gate_num_time]):
+                if time==1:
+                    for copy in (copies if isinstance(copies, list) else [copies]):
+                        test_data.append({
+                            "d": d,
+                            "m": m,
+                            "rank": rank,
+                            "gate_num_time": time,
+                            "method": method,
+                            "copies": copy,
+                            "case":case
+                        })
+                else:
                     test_data.append({
-                        "d": d,
-                        "m": m,
-                        "rank": rank,
-                        "gate_num_time": time,
-                        "method": method,
-                        "copies": copy,
-                        "case":case
-                    })
+                            "d": d,
+                            "m": m,
+                            "rank": rank,
+                            "gate_num_time": time,
+                            "method": method,
+                            "copies": 1,
+                            "case":case
+                        })
     return test_data
 
 def save_data_to_json(file_path, data):
@@ -46,22 +57,24 @@ def save_data_to_json(file_path, data):
         json.dump(data, file, indent=4)
 
 def main():
-    d_s = [4]          
-    m_s = [10,20,30]         
-    gate_num_times = [1]
-    total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "blended", "random"}
-    method_s = ["blended_three", "blended"]
-    copies_s = [1]
     special_methods = {"interweave", "special_blended", "blended_three", "classical_shadow"}
-    rank_s = {2:[1], 4:[2], 8:[4], 16:[7,8,9], 32:[16]}
+    total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "blended", "random"}
+    
+    
+    d_s = [16]          
+    m_s = [10,20,30,40,50,60,70,80]         
+    gate_num_times = [1]
+    method_s = ["interweave","random","blended", "blended_three", "classical_shadow","special_blended","special_random"] 
+    copies_s = [1,2,3]
+    rank_s = {2:[1], 4:[2], 8:[4], 16:[2,4,6,8,10,12,14], 32:[16]}
     file_path = "test_data.json"
 
     case_1_high = 0.9                 
     case_1_low = 0.1                 
     case_2_pro = 0.01
-    test_time = 50                     
-    average_time = 30          
-    case = 2
+    test_time = 100                     
+    average_time = 50          
+    case = 1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)
     test_data = generate_test_entries(d_s, m_s, rank_s, gate_num_times,case, method_s, copies_s, special_methods)

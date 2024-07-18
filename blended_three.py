@@ -1,5 +1,4 @@
 from generate_povm import generate_povm_epson_case_1
-from freedom_measurement import generate_freedom_measurement
 import numpy as np
 from scipy.linalg import sqrtm
 from circuit import construct_blended_three_outcome_circuit,test_blended_circuit

@@ -54,7 +54,7 @@ if __name__=="__main__":
             function_arg=(copies,d,m,povm_set_m[i],state) if method=="classical_shadow" else (copies,d,m,gate_num_time,povm_set_m[i],roh_0,case,state,test_time,case_1_high,method)
             result=excuted_function(*function_arg)
             print(f'result:{result}')
-            print(f'method: {method}, m: {m}, coef: {gate_num_time}, copies: {copies}')
+            print(f'd: {d}, rank: {rank}, method: {method}, m: {m}, coef: {gate_num_time}, copies: {copies}')
             experiment_raw_data.append(result["experiment"])
             theorem_raw_data.append(result["theorem"])
            

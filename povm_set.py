@@ -28,6 +28,11 @@ if __name__ == "__main__":
     case_1_high = data["case_1_high"]
     case_1_low = data["case_1_low"]
     case_2_pro = data["case_2_pro"]
+    method_s=data["method_s"]
+    average_time=data["average_time"]
+    m_s=data["m_s"]
+    d_s=data["d_s"]
+    
 
     # Ensure the measurement directory exists
     measurement_dir = './measurement_dir'
