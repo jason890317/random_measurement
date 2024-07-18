@@ -11,13 +11,15 @@ def ensure_directory_exists(directory):
 
 def generate_and_save_povm(file_path, generation_function, generation_args):
     """Generate and save POVM data if it doesn't already exist."""
-    if not os.path.exists(file_path):
+    existed_set=np.load(file_path)
+    if not os.path.exists(file_path) or len(existed_set)!=average_time:
         povm_set = [generation_function(*generation_args) for _ in range(average_time)]
         np.save(file_path, povm_set)
         print(f"Generated and saved POVM data to {file_path}")
     else:
         print(f"POVM data already exists at {file_path}, no action taken.")
-
+    
+            
 if __name__ == "__main__":
     # Load configuration from JSON file
     with open('test_data.json', 'r') as file:
@@ -32,7 +34,7 @@ if __name__ == "__main__":
     average_time=data["average_time"]
     m_s=data["m_s"]
     d_s=data["d_s"]
-    
+    rank_s=data["rank_s"]
 
     # Ensure the measurement directory exists
     measurement_dir = './measurement_dir'
