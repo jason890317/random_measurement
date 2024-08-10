@@ -10,7 +10,10 @@ if __name__=="__main__":
     
     
     test_data_json=sys.argv[1]
-    save_dir="./result_plot"
+    save_dir="./result_plot/"+test_data_json[12:-5]+"/"
+    if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+    
     
     with open(test_data_json, 'r') as file:
         data = json.load(file)
@@ -252,7 +255,15 @@ if __name__=="__main__":
     # # ####################################################################################################################
     
     ### compare interweave and special_blended in each Alpha cof
-    cof_s=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2.0]
+    cof_s=[0.6,
+        0.8,
+        1,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2,
+        3]
     for cof in cof_s:
         filtered_df = pd_data[(pd_data["gate_num_time"]==cof) &((pd_data['method'] == 'optimizing_blended')|(pd_data['method'] == 'special_blended') | (pd_data['method'] =='interweave') )]
     
@@ -308,7 +319,7 @@ if __name__=="__main__":
     ##################################################################################################################
     
     ## compare interweave and specail_blended in copies in with different alpha 
-    m=20
+    m=100
     
     filtered_df = pd_data[(pd_data["m"]==m) &((pd_data['method'] == 'optimizing_blended')|(pd_data['method'] == 'special_blended') | (pd_data['method'] =='interweave') )]
 
