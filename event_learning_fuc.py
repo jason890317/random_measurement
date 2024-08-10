@@ -5,7 +5,7 @@ from tools import (
     resolve_blended_result_case_interweave, generate_permutations, resolve_blended_three_result
 )
 
-from blended_measurement import blended_measurement, blended_measurement_inverse
+from blended_measurement import blended_measurement, blended_measurement_inverse,optimizing_blended_measurement
 from circuit import (
     construct_blended_circuit, test_blended_circuit, random_sequences_circuit, test_random_circuit,
     construct_blended_circuit_inverse, construct_blended_three_outcome_circuit
@@ -27,13 +27,17 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         accept_time=resolve_random_result_case_special(counts,high)
         
         experiment=accept_time/m
-    if method=='special_blended':
+    if method=='special_blended' or method=="optimizing_blended":
         # povm_set=generate_povm_epson_case_special(d,m,rank,pro_case_1_h,pro_case_1_l,roh_0)
         
         # povm_set_pro=show_probability_povm(povm_set,roh_0,True)
         accept_time=0
         
-        blended_set=blended_measurement(povm_set,d,m)
+        if method=="optimizing_blended":
+            blended_set=optimizing_blended_measurement(povm_set,d,m)
+        elif method=="special_blended":
+            blended_set=blended_measurement(povm_set,d,m)
+        
         blended_set=[ item@item.T.conj() for item in blended_set]
         # povm_set_pro=show_probability_povm(blended_set,roh_0,False)
         
@@ -231,7 +235,7 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         result={"theorem":at_least_pro.real,"experiment":experiment}
     elif case==2 and (method=="blended" or method=="random"):
         result={"theorem":delta.real,"experiment":experiment}
-    elif method=='special_random' or method=='special_blended' or method=="interweave" or method=="blended_three":
+    elif method=='special_random' or method=='special_blended' or method=="interweave" or method=="blended_three" or method=="optimizing_blended":
         result={"theorem":0,"experiment":experiment}
         
     return result

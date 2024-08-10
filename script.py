@@ -11,7 +11,9 @@ if __name__=="__main__":
     now = datetime.datetime.now()
     date_time = now.strftime("%m_%d_%H_%M_%S")
     
-    file_path="result_json/result_"+date_time+".json"
+    
+    # file_path="result_json/result_"+date_time+".json"
+    file_path="result_json/set_alpha_0_8.json"
     
     with open('test_data.json', 'r') as file:
         data = json.load(file)
@@ -39,7 +41,7 @@ if __name__=="__main__":
         copies=test_data["copies"]
         gate_num_time=test_data["gate_num_time"]
         
-        if method=="special_blended" or method=="special_random" or method=="interweave" or method=="blended_three" or method=="classical_shadow":
+        if method=="special_blended" or method=="special_random" or method=="interweave" or method=="blended_three" or method=="classical_shadow" or method=="optimizing_blended":
             povm_set_m=np.load('./measurement_dir/special'+'_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy')
         else:
             povm_set_m=np.load('./measurement_dir/case_'+str(case)+'_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy')

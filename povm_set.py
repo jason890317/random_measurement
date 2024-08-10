@@ -11,13 +11,19 @@ def ensure_directory_exists(directory):
 
 def generate_and_save_povm(file_path, generation_function, generation_args):
     """Generate and save POVM data if it doesn't already exist."""
-    existed_set=np.load(file_path)
-    if not os.path.exists(file_path) or len(existed_set)!=average_time:
+    try:
+        existed_set=np.load(file_path)
+    except :
         povm_set = [generation_function(*generation_args) for _ in range(average_time)]
         np.save(file_path, povm_set)
         print(f"Generated and saved POVM data to {file_path}")
     else:
-        print(f"POVM data already exists at {file_path}, no action taken.")
+        if  len(existed_set)!=average_time:
+            povm_set = [generation_function(*generation_args) for _ in range(average_time)]
+            np.save(file_path, povm_set)
+            print(f"Generated and saved POVM data to {file_path}")
+        else:
+            print(f"POVM data already exists at {file_path}, no action taken.")
     
             
 if __name__ == "__main__":
@@ -64,7 +70,7 @@ if __name__ == "__main__":
         if method in ["blended", "random"]:
             generation_function = generate_povm_epson_case_1 if case == 1 else generate_povm_epson_case_2
             generation_args=(d, m, rank, case_1_high, case_1_low, roh_0) if case == 1 else (d,m,rank,case_2_pro,roh_0)
-        elif method in ['special_random', 'special_blended', 'interweave', 'blended_three','classical_shadow']:
+        elif method in ['special_random', 'special_blended', 'interweave', 'blended_three','classical_shadow','optimizing_blended']:
             generation_function = generate_povm_epson_case_special
             generation_args=(d, m, rank, case_1_high, case_1_low, roh_0)
         else:

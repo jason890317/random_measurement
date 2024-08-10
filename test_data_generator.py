@@ -25,7 +25,7 @@ def generate_test_entries(d_s, m_s, rank_s, gate_num_times, case,method_s, copie
             copies = 1
             if method in special_methods:
                 copies = copies_s
-                if method in ["interweave", "special_blended"]:
+                if method in ["interweave", "special_blended","optimizing_blended"]:
                     gate_num_time = gate_num_times
             for time in (gate_num_time if isinstance(gate_num_time, list) else [gate_num_time]):
                 if time==1:
@@ -57,23 +57,23 @@ def save_data_to_json(file_path, data):
         json.dump(data, file, indent=4)
 
 def main():
-    special_methods = {"interweave", "special_blended", "blended_three", "classical_shadow"}
-    total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "blended", "random"}
+    special_methods = {"optimizing_blended","interweave", "special_blended", "blended_three", "classical_shadow"}
+    total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "optimizing_blended","blended", "random"}
     
     
-    d_s = [16]          
-    m_s = [10,20,30,40,50,60,70,80]         
+    d_s = [16]
+    m_s = [10,20,30,40,50,60,70,80,90,100]         
     gate_num_times = [1]
-    method_s = ["interweave","random","blended", "blended_three", "classical_shadow","special_blended","special_random"] 
-    copies_s = [1,2,3]
-    rank_s = {2:[1], 4:[2], 8:[4], 16:[2,4,6,8,10,12,14], 32:[16]}
+    method_s = ["special_blended","optimizing_blended"] 
+    copies_s = [1]
+    rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16]}
     file_path = "test_data.json"
 
     case_1_high = 0.9                 
     case_1_low = 0.1                 
     case_2_pro = 0.01
     test_time = 100                     
-    average_time = 50          
+    average_time = 30          
     case = 1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)
