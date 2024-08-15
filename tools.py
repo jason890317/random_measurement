@@ -129,7 +129,7 @@ def resolve_blended_result_case_special(counts_set,m,gate_num_times):
         # print(result)
         result=result[::-1] 
         
-        # print(result)
+        print(result)
 
         for item in result:
             if item!=0:

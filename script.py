@@ -13,7 +13,7 @@ if __name__=="__main__":
     
     
     # file_path="result_json/result_"+date_time+".json"
-    file_path="result_json/set_alpha_0_8.json"
+    file_path="result_json/d_32_2_up.json"
     
     with open('test_data.json', 'r') as file:
         data = json.load(file)

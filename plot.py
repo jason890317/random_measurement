@@ -255,7 +255,10 @@ if __name__=="__main__":
     # # ####################################################################################################################
     
     ### compare interweave and special_blended in each Alpha cof
-    cof_s=[0.6,
+    cof_s=[
+        0.2,
+        0.4,
+        0.6,
         0.8,
         1,
         1.2,
@@ -263,7 +266,8 @@ if __name__=="__main__":
         1.6,
         1.8,
         2,
-        3]
+        2.2,
+        2.4]
     for cof in cof_s:
         filtered_df = pd_data[(pd_data["gate_num_time"]==cof) &((pd_data['method'] == 'optimizing_blended')|(pd_data['method'] == 'special_blended') | (pd_data['method'] =='interweave') )]
     
@@ -319,7 +323,7 @@ if __name__=="__main__":
     ##################################################################################################################
     
     ## compare interweave and specail_blended in copies in with different alpha 
-    m=100
+    m=8
     
     filtered_df = pd_data[(pd_data["m"]==m) &((pd_data['method'] == 'optimizing_blended')|(pd_data['method'] == 'special_blended') | (pd_data['method'] =='interweave') )]
 
