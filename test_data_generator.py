@@ -61,11 +61,9 @@ def main():
     total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "optimizing_blended","blended", "random"}
     
     
-    d_s = [32]
-    m_s = [8,12,16,20,24,28,32]         
+    d_s = [64]
+    m_s = [4,12,20,28]         
     gate_num_times = [
-        0.2,
-        0.4,
         0.6,
         0.8,
         1,
@@ -76,7 +74,6 @@ def main():
         2,
         2.2,
         2.4
-        
         ]
     method_s = ["special_blended","optimizing_blended"] 
     copies_s = [1]
@@ -87,7 +84,7 @@ def main():
     case_1_low = 0.1                 
     case_2_pro = 0.01
     test_time = 100                     
-    average_time = 100          
+    average_time = 70          
     case = 1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)

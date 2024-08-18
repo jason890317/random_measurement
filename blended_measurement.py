@@ -86,13 +86,13 @@ def optimizing_blended_measurement(set,d,m):
     
     for item in set:
         eigenValue, eigenvector= np.linalg.eig(item)
-        print(f'eigenValue: {abs(eigenValue)}')
+        # print(f'eigenValue: {abs(eigenValue)}')
         sum_set+=item
     eigenValue, eigenvector= np.linalg.eig(sum_set)
     maxEigenValue=max(abs(eigenValue)/m)
-    print(f'the max in the eigenValue: {maxEigenValue}')
+    # print(f'the max in the eigenValue: {maxEigenValue}')
     optimizingFactor=1/maxEigenValue
-    print(f'the factor: {optimizingFactor}')
+    # print(f'the factor: {optimizingFactor}')
     identity=np.eye(d)
     E_0=sqrtm(identity-(sum_set/m)*optimizingFactor)
     E_0=E_0.astype('complex128')
