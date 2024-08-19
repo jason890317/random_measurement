@@ -8,6 +8,34 @@ from tools import projector_html
 
 ############################################## generate povm by rotating projector #####################################
 
+def yieldRandomUnitary(d,epson_vector):
+    
+    U=np.zeros((d,d))
+    
+    while not is_unitary(U):
+        real_part = np.random.rand(d, d)
+        imaginary_part = np.random.rand(d, d)
+        A= real_part + 1j * imaginary_part
+        A[:, 0] = epson_vector
+        U, R = np.linalg.qr(A)
+
+    
+    return U
+
+def is_unitary(matrix, tol=1e-15):
+    # Calculate the conjugate transpose (Hermitian transpose) of the matrix
+    matrix_conj_transpose = np.conjugate(matrix.T)
+    
+    # Calculate the product of the matrix and its conjugate transpose
+    identity_approx = abs(matrix @ matrix_conj_transpose)
+    
+    # Create an identity matrix of the same size
+    identity_matrix = np.eye(matrix.shape[0])
+    
+    # Compare with the identity matrix within a tolerance
+    return np.allclose(identity_approx, identity_matrix, atol=tol)
+
+
 def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
      
     povm=[]
@@ -30,11 +58,7 @@ def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
         epson_vector_l=np.hstack(((np.sqrt(1-epson_l)),np.zeros(d-rank-1),(np.sqrt(epson_l)),np.zeros(rank-1)))
         
         #generate random unitary to rotate the projector
-        real_part = np.random.rand(d, d)
-        imaginary_part = np.random.rand(d, d)
-        A= real_part + 1j * imaginary_part
-        A[:, 0] = epson_vector_l
-        U, R = np.linalg.qr(A)
+        U=yieldRandomUnitary(d,epson_vector_l)
         
         #rotating
         temp=U.T.conj()@projector@U
@@ -63,11 +87,7 @@ def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):
         epson_vector_h=np.hstack(((np.sqrt(1-epson_h)),np.zeros(d-rank-1),(np.sqrt(epson_h)),np.zeros(rank-1)))
         
         #generate random unitary to rotate the projector
-        real_part = np.random.rand(d, d)
-        imaginary_part = np.random.rand(d, d)
-        A= real_part + 1j * imaginary_part
-        A[:, 0] = epson_vector_h
-        U, R = np.linalg.qr(A)
+        U=yieldRandomUnitary(d,epson_vector_h)
         
         #rotating
         temp=U.T.conj()@projector@U
@@ -112,11 +132,7 @@ def generate_povm_epson_case_2(d,m,rank,pro_l,roh):
         epson_vector=np.hstack(((np.sqrt(1-epson)),np.zeros(d-rank-1),(np.sqrt(epson)),np.zeros(rank-1)))
         
         #generate random unitary to rotate the projector
-        real_part = np.random.rand(d, d)
-        imaginary_part = np.random.rand(d, d)
-        A= real_part + 1j * imaginary_part
-        A[:, 0] = epson_vector
-        U, R = np.linalg.qr(A)
+        U=yieldRandomUnitary(d,epson_vector)
         
         #rotating
         temp=U.T.conj()@projector@U
@@ -162,11 +178,7 @@ def generate_povm_epson_case_special(d,m,rank,pro_h,pro_l,roh):
         epson_vector_l=np.hstack(((np.sqrt(1-epson_l)),np.zeros(d-rank-1),(np.sqrt(epson_l)),np.zeros(rank-1)))
         
         #generate random unitary to rotate the projector
-        real_part = np.random.rand(d, d)
-        imaginary_part = np.random.rand(d, d)
-        A= real_part + 1j * imaginary_part
-        A[:, 0] = epson_vector_l
-        U, R = np.linalg.qr(A)
+        U=yieldRandomUnitary(d,epson_vector_l)
         
         #rotating
         temp=U.T.conj()@projector@U
@@ -195,11 +207,7 @@ def generate_povm_epson_case_special(d,m,rank,pro_h,pro_l,roh):
         epson_vector_h=np.hstack(((np.sqrt(1-epson_h)),np.zeros(d-rank-1),(np.sqrt(epson_h)),np.zeros(rank-1)))
         
         #generate random unitary to rotate the projector
-        real_part = np.random.rand(d, d)
-        imaginary_part = np.random.rand(d, d)
-        A= real_part + 1j * imaginary_part
-        A[:, 0] = epson_vector_h
-        U, R = np.linalg.qr(A)
+        U=yieldRandomUnitary(d,epson_vector_h)
         
         #rotating
         temp=U.T.conj()@projector@U

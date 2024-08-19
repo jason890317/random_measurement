@@ -75,7 +75,7 @@ def main():
         2.2,
         2.4
         ]
-    method_s = ["special_blended","optimizing_blended"] 
+    method_s = ["special_random"] 
     copies_s = [1]
     rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16], 64:[32]}
     file_path = "test_data.json"
@@ -84,7 +84,7 @@ def main():
     case_1_low = 0.1                 
     case_2_pro = 0.01
     test_time = 100                     
-    average_time = 70          
+    average_time = 100          
     case = 1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)

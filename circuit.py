@@ -77,7 +77,7 @@ from qiskit.visualization import circuit_drawer
 # # %%
 # # Using the original unitary generator
 
-def compute_full_rank_unitary(povm, atol=1e-13, rtol=0):
+def compute_full_rank_unitary(povm, atol=1e-18, rtol=0):
     """
     This function computes the unitary that rotates the system to the Hilbert space of the ancilla
     Input:  POVM ---> a list of the elements of POVM
@@ -114,7 +114,7 @@ def compute_full_rank_unitary(povm, atol=1e-13, rtol=0):
     
     # check for unitarity of U
     # print(U.T.conj()@U)
-    assert np.allclose(U.T.conj()@U, np.eye(N),atol=1e-07), "Failed to construct U"
+    assert np.allclose(U.T.conj()@U, np.eye(N),atol=1e-8), "Failed to construct U"
     
     return U
 

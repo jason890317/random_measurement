@@ -98,10 +98,10 @@ def resolve_random_result_case_special(counts,high):
     
     keys=keys[::-1]
     
-    # 0 in the result => accept
-    # 1 in the result => reject
+    # 1 in the result => accept
+    # 0 in the result => reject
     
-    ans = ''.join('0' if i in high else '1' for i in range(len(keys[0])))
+    ans = ''.join('1' if i in high else '0' for i in range(len(keys[0])))
     # print("ans: "+ans)
     # print(keys)
     ans = xor_binary_strings(ans,keys[0])
