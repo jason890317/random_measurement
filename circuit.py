@@ -77,7 +77,7 @@ from qiskit.visualization import circuit_drawer
 # # %%
 # # Using the original unitary generator
 
-def compute_full_rank_unitary(povm, atol=1e-18, rtol=0):
+def compute_full_rank_unitary(povm, atol=1e-13, rtol=0):
     """
     This function computes the unitary that rotates the system to the Hilbert space of the ancilla
     Input:  POVM ---> a list of the elements of POVM
@@ -368,16 +368,8 @@ def random_sequences_circuit(povm,state,m,pro_h):
     highest_pro_povm=[]
     roh=np.outer(state,state.conj().T)
     
-    
-    # for item in povm:
-    #     print(np.array(item))
-    
-    # print("beforo: ")
-    # print(povm)
-    # print()
     np.random.shuffle(povm)
-    # print("after: ")
-    # print(povm)
+    
     U=[]
     
     num_ancilla_qubit = 1 # total number of qubits for system

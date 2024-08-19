@@ -1,39 +1,29 @@
 import numpy as np
 import random
 from scipy.stats import unitary_group
-
+import time
 import sys
 from tools import projector_html
 
 
 ############################################## generate povm by rotating projector #####################################
 
+
+
 def yieldRandomUnitary(d,epson_vector):
     
     U=np.zeros((d,d))
     
-    while not is_unitary(U):
-        real_part = np.random.rand(d, d)
-        imaginary_part = np.random.rand(d, d)
-        A= real_part + 1j * imaginary_part
-        A[:, 0] = epson_vector
-        U, R = np.linalg.qr(A)
+    np.random.seed(int(time.time()))
+    real_part = np.random.rand(d, d)
+    imaginary_part = np.random.rand(d, d)
+    A= real_part + 1j * imaginary_part
+    A[:, 0] = epson_vector
+    U, R = np.linalg.qr(A)
 
     
     return U
 
-def is_unitary(matrix, tol=1e-15):
-    # Calculate the conjugate transpose (Hermitian transpose) of the matrix
-    matrix_conj_transpose = np.conjugate(matrix.T)
-    
-    # Calculate the product of the matrix and its conjugate transpose
-    identity_approx = abs(matrix @ matrix_conj_transpose)
-    
-    # Create an identity matrix of the same size
-    identity_matrix = np.eye(matrix.shape[0])
-    
-    # Compare with the identity matrix within a tolerance
-    return np.allclose(identity_approx, identity_matrix, atol=tol)
 
 
 def generate_povm_epson_case_1(d,m,rank,pro_h,pro_l,roh):

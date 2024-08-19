@@ -62,7 +62,7 @@ def main():
     
     
     d_s = [64]
-    m_s = [4,12,20,28]         
+    m_s = [4,8,12,16,20,24,28,32]         
     gate_num_times = [
         0.6,
         0.8,
@@ -75,7 +75,7 @@ def main():
         2.2,
         2.4
         ]
-    method_s = ["special_random"] 
+    method_s = ["special_blended","optimizing_blended"] 
     copies_s = [1]
     rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16], 64:[32]}
     file_path = "test_data.json"
