@@ -4,7 +4,7 @@ from scipy.stats import unitary_group
 import time
 import sys
 from tools import projector_html
-
+from scipy.stats import unitary_group
 
 ############################################## generate povm by rotating projector #####################################
 
@@ -12,16 +12,14 @@ from tools import projector_html
 
 def yieldRandomUnitary(d,epson_vector):
     
-    U=np.zeros((d,d))
-    
-    np.random.seed(int(time.time()))
-    real_part = np.random.rand(d, d)
-    imaginary_part = np.random.rand(d, d)
-    A= real_part + 1j * imaginary_part
+    # np.random.seed(int(time.time()))
+    # real_part = np.random.rand(d, d)
+    # imaginary_part = np.random.rand(d, d)
+    # A= real_part + 1j * imaginary_part
+    A=unitary_group.rvs(d)
     A[:, 0] = epson_vector
     U, R = np.linalg.qr(A)
 
-    
     return U
 
 

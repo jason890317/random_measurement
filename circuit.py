@@ -389,7 +389,7 @@ def random_sequences_circuit(povm,state,m,pro_h):
         if np.trace(povm[p]@roh) > (pro_h - atol):
             
             highest_pro_povm.append(p)
-        
+            
         # print(povm[p])
        
         p_inv=np.eye(dim_system)-povm[p]

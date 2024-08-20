@@ -2,7 +2,8 @@ import numpy as np
 from tools import (
     show_probability_povm, resolve_blended_result_case_1, resolve_blended_result_case_2,
     resolve_random_result_case_special, resolve_random_result_case_1, resolve_blended_result_case_special,
-    resolve_blended_result_case_interweave, generate_permutations, resolve_blended_three_result
+    resolve_blended_result_case_interweave, generate_permutations, resolve_blended_three_result,
+    resolve_random_result_case_2
 )
 
 from blended_measurement import blended_measurement, blended_measurement_inverse,optimizing_blended_measurement
@@ -162,16 +163,24 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         
         accept_time=0
         # print(povm_set)
-        for i in range(test_time):
-            
-            qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
-            counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
-            check=resolve_random_result_case_1(counts,high)
-            if check:
-                accept_time+=1
-        experiment=accept_time/test_time
+        if case==1:
+            for i in range(test_time):
+                
+                qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
+                counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+                check=resolve_random_result_case_1(counts,high)
+                if check:
+                    accept_time+=1
+            experiment=accept_time/test_time
         
-        
+        elif case==2:
+            for i in range(test_time):
+                qc,_=random_sequences_circuit(povm_set,state,m,case_1_high)
+                counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+                check=resolve_random_result_case_2(counts)
+                if check:
+                    accept_time+=1
+            experiment=accept_time/test_time
     if method=='blended':
         
         ##############################################################################

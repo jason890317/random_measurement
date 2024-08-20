@@ -3,6 +3,52 @@ from generate_povm import generate_povm_epson_case_1,generate_povm_epson_case_2,
 import numpy as np
 import json
 import os
+from scipy.linalg import sqrtm
+from scipy.linalg import svd
+from blended_measurement import blended_measurement
+
+
+def checkBlednedMeasurement(povm,generation_args):
+    blended_set=blended_measurement(povm,generation_args[0],generation_args[1])
+    blended_set=[ item@item.T.conj() for item in blended_set]
+    return isValidityPOVM(blended_set)
+def checkRandomMeasurement(povm,generation_args):
+    
+    d=generation_args[0]
+    for item in povm:
+        item_inv=np.eye(d)-item
+        if not isValidityPOVM([item,item_inv]):
+            return False
+        
+    return True
+        
+
+def isValidityPOVM(povm, atol=1e-13, rtol=0):
+    
+    povm = [sqrtm(M)for M in povm]
+   
+    v = np.hstack(povm) # arrange the povm elements to form a matrix of dimension: Row X Col*len(povm)
+    v = np.atleast_2d(v) # convert to 2d matrix
+    v=v.astype('complex128')
+    u, s, vh = svd(v)    # apply svd
+    tol = max(atol, rtol * s[0])
+    nnz = (s >= tol).sum()
+    ns = vh[nnz:]         # missing rows of v
+    V = np.vstack((v, ns)) 
+    n = int(np.ceil(np.log2(V.shape[0])))
+    N = 2**n      # dimension of system and ancilla Hilber space
+    r,c = V.shape  
+    U = np.eye(N, dtype=complex) # initialize Unitary matrix to the identity. Ensure it is complex
+    U[:r,:c] = V[:r,:c] # assign all the elements of V to the corresponding elements of U
+    
+    U = U.conj().T  # Transpose the unitary so that the rows are the povm
+
+    if np.allclose(U.T.conj()@U, np.eye(N),atol=(1e-10)):
+        return True
+    else: 
+        return False
+
+
 
 def ensure_directory_exists(directory):
     """Ensure the specified directory exists; if not, create it."""
@@ -14,12 +60,28 @@ def generate_and_save_povm(file_path, generation_function, generation_args):
     try:
         existed_set=np.load(file_path)
     except :
-        povm_set = [generation_function(*generation_args) for _ in range(average_time)]
+        
+        povm_set=[]
+        while len(povm_set)!=average_time:
+            povm=generation_function(*generation_args)
+            if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
+                povm_set.append(povm)
+                print("len:"+str(len(povm_set)))
+            else:
+                print("failed")
+
         np.save(file_path, povm_set)
         print(f"Generated and saved POVM data to {file_path}")
     else:
         if  len(existed_set)!=average_time:
-            povm_set = [generation_function(*generation_args) for _ in range(average_time)]
+            povm_set=[]
+            while len(povm_set)!=average_time:
+                povm=generation_function(*generation_args)
+                if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
+                    povm_set.append(povm)
+                    print("len:"+str(len(povm_set)))
+                else:
+                    print("failed")
             np.save(file_path, povm_set)
             print(f"Generated and saved POVM data to {file_path}")
         else:

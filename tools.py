@@ -70,20 +70,31 @@ def resolve_blended_result_case_1(counts,m):
 def resolve_random_result_case_1(counts,high):
     
     check=False
-    
-    for item in high:
-        keys=list(counts.keys())
-        keys[0]=keys[0][::-1]
-        # print(item)
-        if(keys[0][item]=='0'):
-            check=True
-        else:
-            check=False
-        for j in range(0,item):
-            if keys[0][j]=='0':
-                check=False
+    keys=list(counts.keys())
 
+    keys[0]=keys[0][::-1]
+    # print("result: "+keys[0])
+    # print("high: "+str(high[0]))
+    for i in range(len(keys[0])):
+        if keys[0][i]=='0' and i!=high[0]:
+            # check=False
+            break
+        elif keys[0][i]=='0' and i==high[0]:
+            check=True            
+   
     return check
+
+def resolve_random_result_case_2(counts):
+    keys=list(counts.keys())
+    keys[0]=keys[0][::-1]
+
+    for item in keys[0]:
+        if item=='0':
+            return True
+    
+    return False
+    
+    
 def xor_binary_strings(str1, str2):
     # Ensure both strings are the same length
     if len(str1) != len(str2):
@@ -96,12 +107,8 @@ def xor_binary_strings(str1, str2):
 def resolve_random_result_case_special(counts,high):
     keys=list(counts.keys())
     
-    keys=keys[::-1]
-    
-    # 1 in the result => accept
-    # 0 in the result => reject
-    
-    ans = ''.join('1' if i in high else '0' for i in range(len(keys[0])))
+    keys[0]=keys[0][::-1]
+    ans = ''.join('0' if i in high else '1' for i in range(len(keys[0])))
     # print("ans: "+ans)
     # print(keys)
     ans = xor_binary_strings(ans,keys[0])
