@@ -42,7 +42,7 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
         # epson_l=random.uniform(0.03,low_pro) 
         # #generate the epson vector
         # epson_vector_l=np.hstack(((np.sqrt(1-epson_l)),np.zeros(d-rank-1),(np.sqrt(epson_l)),np.zeros(rank-1)))
-        p=distribution(0.00001,low_pro)
+        p=distribution(0.003,low_pro)
         epson_vector_l=generate_first_vector(d,p)
         
         #generate random unitary to rotate the projector
@@ -93,31 +93,37 @@ def yieldRandomUnitary(d,epson_vector):
 
 
 
-def distribution(l,h):
-    # Parameters for the normal distribution
-    mu = (l+h)/2     # Mean (chosen to be within the truncation range)
-    sigma = 0.02  # Standard deviation
 
-    # Truncation boundaries
-    a, b = l,h
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import quad
 
-    # Convert to the standard normal form for truncnorm
-    a_standard = (a - mu) / sigma
-    b_standard = (b - mu) / sigma
 
-    # Generate samples from the truncated normal distribution
-    sample = truncnorm.rvs(a_standard, b_standard, loc=mu, scale=sigma, size=1)
+def distribution(a,b):
+# Define the interval [a, b]
 
+
+    # Define a custom PDF function, for example, a quadratic function
+    def normal_pdf(x, mu=0.5, sigma=0.1):
+        return (1 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mu) / sigma)**2)
+
+    # Normalize the PDF over the interval [a, b]
+    normalization_constant = quad(normal_pdf, a, b)[0]
+
+    def normalized_custom_pdf(x):
+        return normal_pdf(x) / normalization_constant
+
+
+    from scipy.stats import rv_continuous
+
+    class custom_distribution(rv_continuous):
+        def _pdf(self, x):
+            return normalized_custom_pdf(x)
+
+    # Create an instance of the custom distribution
+    custom_dist = custom_distribution(a=a, b=b, name='custom')
+
+    # Generate samples
+    sample = custom_dist.rvs(size=1)
+    
     return sample
-    
-    
-    # # Plot the histogram of the samples
-    # plt.hist(samples, bins=50, density=True, alpha=0.6, color='g')
-
-    # # Plot the truncated normal distribution for reference
-    # x = np.linspace(0, 0.1, 1000)
-    # pdf = truncnorm.pdf(x, a_standard, b_standard, loc=mu, scale=sigma)
-    # plt.plot(x, pdf, 'r-', lw=2)
-
-    # plt.title('Truncated Normal Distribution (0 ~ 0.1)')
-    # plt.show()

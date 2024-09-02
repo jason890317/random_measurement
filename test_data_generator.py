@@ -65,19 +65,19 @@ def main():
     d_s = [16]
     m_s = [4,8,12,16,20,24,28,32]         
     gate_num_times = [
-        0.6,
-        0.8,
-        1,
-        1.2,
-        1.4,
-        1.6,
-        1.8,
-        2,
-        2.2,
-        2.4
-        
+        # 0.6,
+        # 0.8,
+        # 1,
+        # 1.2,
+        # 1.4,
+        # 1.6,
+        # 1.8,
+        # 2,
+        # 2.2,
+        # 2.4
+        1
         ]
-    method_s = ["blended"] 
+    method_s = ["special_blended","special_random"] 
     copies_s = [1]
     rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16], 64:[32]}
     file_path = sys.argv[1]
@@ -86,8 +86,8 @@ def main():
     case_1_low = 0.1                 
     case_2_pro = 0.01
     test_time = 100                    
-    average_time = 40          
-    case =2
+    average_time = 100          
+    case =1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)
     test_data = generate_test_entries(d_s, m_s, rank_s, gate_num_times,case, method_s, copies_s, special_methods)
