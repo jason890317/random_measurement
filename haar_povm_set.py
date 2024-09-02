@@ -92,7 +92,7 @@ def generate_and_save_povm(file_path, generation_function, generation_args):
 if __name__ == "__main__":
     # Load configuration from JSON file
     
-    test_data_path= sys.argv[1]
+    test_data_path= "./test_script/"+sys.argv[1]
     with open(test_data_path, 'r') as file:
         data = json.load(file)
 

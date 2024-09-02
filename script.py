@@ -12,7 +12,7 @@ if __name__=="__main__":
     now = datetime.datetime.now()
     date_time = now.strftime("%m_%d_%H_%M_%S")
     
-    test_data_path=sys.argv[1]
+    test_data_path="./test_script/"+sys.argv[1]
     # file_path="result_json/result_"+date_time+".json"
     file_path="result_json/"+test_data_path
     

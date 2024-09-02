@@ -82,6 +82,8 @@ def main():
     rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16], 64:[32]}
     file_path = sys.argv[1]
 
+    file_path="./test_script/"+file_path
+    
     case_1_high = 0.9                 
     case_1_low = 0.1                 
     case_2_pro = 0.01
