@@ -1,6 +1,6 @@
 
 import numpy as np
-from generate_povm import  generate_povm_epson_case_special
+
 from tools import show_probability_povm,top_half_indices,random_unitary,split_shadow_median
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
 import numpy as np

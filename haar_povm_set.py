@@ -1,5 +1,5 @@
 
-from generate_povm import generate_povm_epson_case_1,generate_povm_epson_case_2,generate_povm_epson_case_special,generate_povm_general
+from generate_povm import generate_povm_general
 import numpy as np
 import json
 import os
