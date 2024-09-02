@@ -4,5 +4,7 @@ density
 __pycache__
 .Trash-1000
 measurement_dir
+Haar_measurement_dir
 *.json
+test.py
 result_plot

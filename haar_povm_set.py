@@ -12,9 +12,8 @@ def checkBlednedMeasurement(povm,generation_args):
     blended_set=blended_measurement(povm,generation_args[0],generation_args[1])
     blended_set=[ item@item.T.conj() for item in blended_set]
     return isValidityPOVM(blended_set)
-
-
 def checkRandomMeasurement(povm,generation_args):
+    
     d=generation_args[0]
     for item in povm:
         item_inv=np.eye(d)-item
@@ -65,12 +64,12 @@ def generate_and_save_povm(file_path, generation_function, generation_args):
         povm_set=[]
         while len(povm_set)!=average_time:
             povm=generation_function(*generation_args)
-            if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
-                povm_set.append(povm)
-                print("len:"+str(len(povm_set)))
-            else:
-                print("failed")
-
+            # if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
+            povm_set.append(povm)
+            #     print("len:"+str(len(povm_set)))
+            # else:
+            #     print("failed")
+            print("\nnumber of set: "+str(len(povm_set))+"\n")
         np.save(file_path, povm_set)
         print(f"Generated and saved POVM data to {file_path}")
     else:
@@ -78,11 +77,12 @@ def generate_and_save_povm(file_path, generation_function, generation_args):
             povm_set=[]
             while len(povm_set)!=average_time:
                 povm=generation_function(*generation_args)
-                if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
-                    povm_set.append(povm)
-                    print("len:"+str(len(povm_set)))
-                else:
-                    print("failed")
+                # if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
+                povm_set.append(povm)
+                #     print("len:"+str(len(povm_set)))
+                # else:
+                #     print("failed")
+                print("number of set: "+str(len(povm_set)))
             np.save(file_path, povm_set)
             print(f"Generated and saved POVM data to {file_path}")
         else:
@@ -90,6 +90,8 @@ def generate_and_save_povm(file_path, generation_function, generation_args):
     
             
 if __name__ == "__main__":
+    # Load configuration from JSON file
+    
     test_data_path= sys.argv[1]
     with open(test_data_path, 'r') as file:
         data = json.load(file)
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     rank_s=data["rank_s"]
 
     # Ensure the measurement directory exists
-    measurement_dir = './measurement_dir'
+    measurement_dir = './Haar_measurement_dir'
     ensure_directory_exists(measurement_dir)
 
     # Process each test data entry
@@ -131,11 +133,11 @@ if __name__ == "__main__":
 
         # Select the appropriate POVM generation function based on the method and case
         if method in ["blended", "random"]:
-            generation_function = generate_povm_epson_case_1 if case == 1 else generate_povm_epson_case_2
-            generation_args=(d, m, rank, case_1_high, case_1_low, roh_0) if case == 1 else (d,m,rank,case_2_pro,roh_0)
+            generation_function = generate_povm_general
+            generation_args=(1,d, m, rank, case_1_high, case_1_low, case_2_pro,roh_0) if case == 1 else (2,d, m, rank, case_1_high, case_1_low, case_2_pro,roh_0)
         elif method in ['special_random', 'special_blended', 'interweave', 'blended_three','classical_shadow','optimizing_blended']:
-            generation_function = generate_povm_epson_case_special
-            generation_args=(d, m, rank, case_1_high, case_1_low, roh_0)
+            generation_function = generate_povm_general
+            generation_args=(3,d, m, rank, case_1_high, case_1_low, case_2_pro,roh_0)
         else:
             continue  # Skip if the method is not recognized
 

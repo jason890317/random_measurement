@@ -142,18 +142,12 @@ def resolve_blended_result_case_special(counts_set,m,gate_num_times):
             if item!=0:
                 vote[item-1]+=1
         
-        # for i in range(len(result)):
-        #     if result[i]!=0:
-        #         check_array[result[i]-1]=1
-                    
-        # for i in range(len(check_array)):
-        #     if check_array[i]==-1:
-        #         check_array[i]=0
     # print(vote)
     for item in top_half_indices(vote):
         check_array[item]=1
-    # print(check_array)
-    # print(correct)
+    print(check_array)
+    print(correct)
+    print()
     xor_result = [a ^ b for a, b in zip(check_array, correct)]
     accept_time=xor_result.count(0)
         

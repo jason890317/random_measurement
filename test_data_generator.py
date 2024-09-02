@@ -1,5 +1,6 @@
 import json
 from itertools import product
+import sys
 
 def validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods):
     """ Validate various input parameters to ensure they meet expected criteria. """
@@ -61,7 +62,7 @@ def main():
     total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "optimizing_blended","blended", "random"}
     
     
-    d_s = [16]
+    d_s = [64]
     m_s = [4,8,12,16,20,24,28,32]         
     gate_num_times = [
         0.6,
@@ -74,18 +75,19 @@ def main():
         2,
         2.2,
         2.4
+        
         ]
-    method_s = ["blended","random"] 
+    method_s = ["special_blended", "special_random"] 
     copies_s = [1]
     rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16], 64:[32]}
-    file_path = "test_data.json"
+    file_path = sys.argv[1]
 
     case_1_high = 0.9                 
     case_1_low = 0.1                 
     case_2_pro = 0.01
-    test_time = 100                     
-    average_time = 70          
-    case = 2
+    test_time = 100                    
+    average_time = 40          
+    case =1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)
     test_data = generate_test_entries(d_s, m_s, rank_s, gate_num_times,case, method_s, copies_s, special_methods)

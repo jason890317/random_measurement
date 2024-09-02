@@ -6,16 +6,91 @@ import sys
 from tools import projector_html
 from scipy.stats import unitary_group
 
+
+
+###############################################################################################################
+import numpy as np
+from scipy.stats import unitary_group
+from joblib import Parallel, delayed
+import sys
+
 ############################################## generate povm by rotating projector #####################################
+def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, batch_size=1000, n_jobs=-1,perturbation=1e-3):
+    
+    # Determine the number of high and low probability matrices
+    if case == 1:
+        number_of_high = 1
+        high_pro = case_1_h
+        low_pro = case_1_l
+    elif case == 3:
+        number_of_high = int(m / 2)
+        high_pro = case_1_h
+        low_pro = case_1_l
+    elif case == 2:
+        number_of_high = 0
+        high_pro = 1
+        low_pro = case_2_l
+        
+    number_of_low = m - number_of_high
+    povm = []
+    projector = np.diag(np.hstack([np.zeros(d - rank), np.ones(rank)]))
+    # zero_space_projector = np.eye(d) - projector
+    # projector += perturbation * np.random.randn(d, d)
+    # projector = (projector + projector.T.conj()) / 2  # Ensure it's still Hermitian
+    # Helper function to check low-probability condition
+    def check_unitary_low(seed):
+        rng = np.random.default_rng(seed)
+        U = unitary_group.rvs(d, random_state=rng)
+        
+        trace_value = np.real(np.trace(U.T.conj() @ projector @ U @ roh))
+        if trace_value < low_pro:
+            return U.T.conj() @ projector @ U, trace_value
+        return None, None
 
+    # Helper function to check high-probability condition
+    def check_unitary_high(seed):
+        rng = np.random.default_rng(seed)
+        U = unitary_group.rvs(d, random_state=rng)
+        trace_value = np.real(np.trace(U.T.conj() @ projector @ U @ roh))
+        if trace_value > high_pro:
+            return U.T.conj() @ projector @ U, trace_value
+        return None, None
 
+    # Generate low-probability POVMs
+    while len(povm) < number_of_low:
+        seeds = np.random.randint(0, np.iinfo(np.int32).max, size=batch_size)
+        results = Parallel(n_jobs=n_jobs)(delayed(check_unitary_low)(seed) for seed in seeds)
+        
+        for result, trace_value in results:
+            if result is not None:
+                povm.append(result)
+                print(f"\npro: {abs(trace_value)}")
+            if len(povm) == number_of_low:
+                break
+        
+        sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
+        sys.stdout.flush()
 
+    # Generate high-probability POVMs
+    while len(povm) < m:
+        seeds = np.random.randint(0, np.iinfo(np.int32).max, size=batch_size)
+        results = Parallel(n_jobs=n_jobs)(delayed(check_unitary_high)(seed) for seed in seeds)
+        
+        for result, trace_value in results:
+            if result is not None:
+                povm.append(result)
+                print(f"\npro: {abs(trace_value)}")
+            if len(povm) == m:
+                break
+        
+        sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
+        sys.stdout.flush()
+    
+    return povm
+
+    
 def yieldRandomUnitary(d,epson_vector):
     
-    # np.random.seed(int(time.time()))
-    # real_part = np.random.rand(d, d)
-    # imaginary_part = np.random.rand(d, d)
-    # A= real_part + 1j * imaginary_part
     A=unitary_group.rvs(d)
     A[:, 0] = epson_vector
     U, R = np.linalg.qr(A)
