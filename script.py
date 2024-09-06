@@ -14,7 +14,7 @@ if __name__=="__main__":
     
     test_data_path="./test_script/"+sys.argv[1]
     # file_path="result_json/result_"+date_time+".json"
-    file_path="result_json/"+test_data_path
+    file_path="result_json/"+sys.argv[1]
     
     measurement_dir='./Haar_measurement_dir/'
     

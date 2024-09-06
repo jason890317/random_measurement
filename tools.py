@@ -206,14 +206,18 @@ def resolve_blended_three_result(counts_set,m,permutation,round,special=True):
         result=[ int(keys[2*i:(i+1)*2],2) for i in range(round)]
         result=result[::-1]
         
-        # print("result: "+ str(result))
+        print("result: "+ str(result))
         for i in range(len(result)):
             if result[i]==1:
+                # print(f'permutation: {permutation[i]}')
                 for j in range(len(permutation[i])):
+                    
                     if permutation[i][j]==1:
                         table[j]+=1
             elif result[i]==2:
+                # print(f'permutation: {permutation[i]}')
                 for j in range(len(permutation[i])):
+                    
                     if permutation[i][j]==2:
                         table[j]+=1
     if not special:
@@ -233,7 +237,8 @@ def resolve_blended_three_result(counts_set,m,permutation,round,special=True):
         correct = [0 if i <m/2 else 1 for i in range(m)]
         
         for item in top_half_indices(table):
-            check_array[item-1]=1
+            check_array[item]=1
+        print(check_array)
         for i in range(len(check_array)):
             if check_array[i]==-1:
                 check_array[i]=0
@@ -320,14 +325,6 @@ def generate_permutations(m, num):
     # print(sampled_permutations)
     return sampled_permutations
 
-def random_unitary(d):
-    
-    real_part = np.random.rand(d, d)
-    imaginary_part = np.random.rand(d, d)
-    A= real_part + 1j * imaginary_part
-    U, _ = np.linalg.qr(A)
-    # print(U)
-    return U
 def split_shadow_median(measurements, classical_shadow_set,K):
     
     # print(classical_shadow_set)

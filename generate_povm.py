@@ -39,9 +39,7 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
     # Generate low-probability POVMs
     while len(povm) < number_of_low:
         
-        # epson_l=random.uniform(0.03,low_pro) 
-        # #generate the epson vector
-        # epson_vector_l=np.hstack(((np.sqrt(1-epson_l)),np.zeros(d-rank-1),(np.sqrt(epson_l)),np.zeros(rank-1)))
+        #generate the special vector
         p=distribution(0.003,low_pro)
         epson_vector_l=generate_first_vector(d,p)
         
@@ -51,19 +49,17 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
         #rotating
         temp=U.T.conj()@projector@U
        
-        print(f'probability: {np.real(np.trace(temp @ roh))}')
         #append povm to the set
-        povm.append(temp)
+        if np.allclose(temp@temp,temp,atol=(1e-14)):
+            povm.append(temp)
         
         sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
         sys.stdout.flush()
 
     # Generate high-probability POVMs
     while len(povm) < m:
-        # epson_h=random.uniform(high_pro,1)
         
-        # #generate the epson vector
-        # epson_vector_h=np.hstack(((np.sqrt(1-epson_h)),np.zeros(d-rank-1),(np.sqrt(epson_h)),np.zeros(rank-1)))
+        #generate the special vector
         p=distribution(high_pro,1)
         epson_vector_h=generate_first_vector(d,p)
          
@@ -73,9 +69,9 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
         #rotating
         temp=U.T.conj()@projector@U
         
-        print(f'probability: {np.real(np.trace(temp @ roh))}')
         #append povm to the set
-        povm.append(temp)
+        if np.allclose(temp@temp,temp,atol=(1e-14)):
+            povm.append(temp)
         
         sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
         sys.stdout.flush()
@@ -97,24 +93,21 @@ def yieldRandomUnitary(d,epson_vector):
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
-
+from scipy.stats import rv_continuous
 
 def distribution(a,b):
 # Define the interval [a, b]
-
 
     # Define a custom PDF function, for example, a quadratic function
     def normal_pdf(x, mu=0.5, sigma=0.1):
         return (1 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mu) / sigma)**2)
 
     # Normalize the PDF over the interval [a, b]
+    # the integration along the interval from a to b   
     normalization_constant = quad(normal_pdf, a, b)[0]
 
     def normalized_custom_pdf(x):
         return normal_pdf(x) / normalization_constant
-
-
-    from scipy.stats import rv_continuous
 
     class custom_distribution(rv_continuous):
         def _pdf(self, x):

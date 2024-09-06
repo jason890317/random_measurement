@@ -9,21 +9,21 @@ from blended_measurement import blended_measurement
 import sys
 
 def checkBlednedMeasurement(povm,generation_args):
-    blended_set=blended_measurement(povm,generation_args[0],generation_args[1])
+    blended_set=blended_measurement(povm,generation_args[1],generation_args[2])
     blended_set=[ item@item.T.conj() for item in blended_set]
+   
     return isValidityPOVM(blended_set)
 def checkRandomMeasurement(povm,generation_args):
     
-    d=generation_args[0]
+    d=generation_args[1]
     for item in povm:
         item_inv=np.eye(d)-item
         if not isValidityPOVM([item,item_inv]):
             return False
-        
     return True
         
 
-def isValidityPOVM(povm, atol=1e-13, rtol=0):
+def isValidityPOVM(povm, atol=1e-10, rtol=0):
     
     povm = [sqrtm(M)for M in povm]
    
@@ -31,7 +31,7 @@ def isValidityPOVM(povm, atol=1e-13, rtol=0):
     v = np.atleast_2d(v) # convert to 2d matrix
     v=v.astype('complex128')
     u, s, vh = svd(v)    # apply svd
-    tol = max(atol, rtol * s[0])
+    tol = atol
     nnz = (s >= tol).sum()
     ns = vh[nnz:]         # missing rows of v
     V = np.vstack((v, ns)) 
@@ -42,7 +42,7 @@ def isValidityPOVM(povm, atol=1e-13, rtol=0):
     U[:r,:c] = V[:r,:c] # assign all the elements of V to the corresponding elements of U
     
     U = U.conj().T  # Transpose the unitary so that the rows are the povm
-
+    
     if np.allclose(U.T.conj()@U, np.eye(N),atol=(1e-10)):
         return True
     else: 
@@ -64,11 +64,11 @@ def generate_and_save_povm(file_path, generation_function, generation_args):
         povm_set=[]
         while len(povm_set)!=average_time:
             povm=generation_function(*generation_args)
-            # if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
-            povm_set.append(povm)
-            #     print("len:"+str(len(povm_set)))
-            # else:
-            #     print("failed")
+            if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
+                povm_set.append(povm)
+                
+            else:
+                print("failed")
             print("\nnumber of set: "+str(len(povm_set))+"\n")
         np.save(file_path, povm_set)
         print(f"Generated and saved POVM data to {file_path}")
@@ -77,11 +77,11 @@ def generate_and_save_povm(file_path, generation_function, generation_args):
             povm_set=[]
             while len(povm_set)!=average_time:
                 povm=generation_function(*generation_args)
-                # if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
-                povm_set.append(povm)
-                #     print("len:"+str(len(povm_set)))
-                # else:
-                #     print("failed")
+                if checkRandomMeasurement(povm,generation_args) and checkBlednedMeasurement(povm,generation_args):
+                    povm_set.append(povm)
+                    
+                else:
+                    print("failed")
                 print("number of set: "+str(len(povm_set)))
             np.save(file_path, povm_set)
             print(f"Generated and saved POVM data to {file_path}")

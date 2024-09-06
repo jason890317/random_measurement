@@ -62,33 +62,31 @@ def main():
     total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "optimizing_blended","blended", "random"}
     
     
-    d_s = [16]
+    d_s = [64]
     m_s = [4,8,12,16,20,24,28,32]         
     gate_num_times = [
-        # 0.6,
-        # 0.8,
-        # 1,
-        # 1.2,
-        # 1.4,
-        # 1.6,
-        # 1.8,
-        # 2,
-        # 2.2,
-        # 2.4
-        1
+        0.6,
+        0.8,
+        1,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2,
+        2.2,
+        2.4
+        
         ]
-    method_s = ["special_blended","special_random"] 
-    copies_s = [1]
+    method_s = ["classical_shadow"] 
+    copies_s = [1,2,3,20]
     rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16], 64:[32]}
-    file_path = sys.argv[1]
+    file_path ="./test_script/"+ sys.argv[1]
 
-    file_path="./test_script/"+file_path
-    
     case_1_high = 0.9                 
     case_1_low = 0.1                 
     case_2_pro = 0.01
     test_time = 100                    
-    average_time = 100          
+    average_time = 50          
     case =1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)
