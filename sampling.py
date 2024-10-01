@@ -35,14 +35,18 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
     while len(povm) < number_of_low:
         
         #generate the special vector
-        p=distribution(0.003,low_pro)
-        epson_vector_l=generate_first_vector(d,p,rank)
         
         #generate random unitary to rotate the projector
-        U=yieldRandomUnitary(d,epson_vector_l)
+        U=yieldRandomUnitary(d)
+        temp=U.T.conj()@projector@U
+        
+        
+        while np.trace(temp@roh)>low_pro:
+            U=yieldRandomUnitary(d)
+            temp=U.T.conj()@projector@U
         
         #rotating
-        temp=U.T.conj()@projector@U
+        
        
         #append povm to the set
         if np.allclose(temp@temp,temp,atol=(1e-14)):
@@ -54,15 +58,13 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
     # Generate high-probability POVMs
     while len(povm) < m:
         
-        #generate the special vector
-        p=distribution(high_pro,1)
-        epson_vector_h=generate_first_vector(d,p,rank)
-         
-        #generate random unitary to rotate the projector
-        U=yieldRandomUnitary(d,epson_vector_h)
-        
-        #rotating
+        U=yieldRandomUnitary(d)
         temp=U.T.conj()@projector@U
+        
+        
+        while np.trace(temp@roh)<high_pro:
+            U=yieldRandomUnitary(d)
+            temp=U.T.conj()@projector@U
         
         #append povm to the set
         if np.allclose(temp@temp,temp,atol=(1e-14)):
@@ -74,10 +76,9 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
     return povm
 
     
-def yieldRandomUnitary(d,epson_vector):
+def yieldRandomUnitary(d):
     
     A=unitary_group.rvs(d)
-    A[:, 0] = epson_vector
     U, R = np.linalg.qr(A)
 
     return U

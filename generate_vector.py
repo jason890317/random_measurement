@@ -1,6 +1,6 @@
 import numpy as np
 
-def generate_first_vector(d,p):
+def generate_first_vector(d,p,rank):
     """
     Generate a vector of the form [a1, a2, ..., an, b1, b2, ..., bn] such that
     sum(|ai|^2) = A and sum(|bi|^2) = B without the constraint of positive real parts.
@@ -14,15 +14,15 @@ def generate_first_vector(d,p):
     - vector: A numpy array containing the vector [a1, a2, ..., an, b1, b2, ..., bn]
     """
     
-    n=int(d/2)
-    
+    n=d-rank####!!!!!!!!!!!!
+    m=rank
     # Generate random complex numbers with positive real parts for ai and bi
     real_a = np.random.rand(n)
     imag_a = np.random.randn(n)
     a = real_a + 1j * imag_a
     
-    real_b = np.random.rand(n)
-    imag_b = np.random.randn(n)
+    real_b = np.random.rand(m)
+    imag_b = np.random.randn(m)
     b = real_b + 1j * imag_b
     
     # Normalize the vectors to satisfy the conditions
@@ -37,7 +37,9 @@ def generate_first_vector(d,p):
     b = np.abs(b.real) + 1j * b.imag
     
     # Construct the final vector
+    ###########################################################
     vector = np.concatenate([a, b])
     
+    ###########################################################
     return vector
 

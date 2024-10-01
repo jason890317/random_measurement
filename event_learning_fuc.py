@@ -18,14 +18,16 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
   
     if method=='special_random':
         # povm_set=generate_povm_epson_case_special(d,m,rank,pro_case_1_h,pro_case_1_l,roh_0)
-        
+        count_set=[]
         accept_time=0
-        
-        qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
-        # print(high)
-        counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+        for i in range(copies):
+            qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
+            # print(high)
+            counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+            
+            count_set.append([counts,high])
         # print(counts)
-        accept_time=resolve_random_result_case_special(counts,high)
+        accept_time=resolve_random_result_case_special(count_set,m)
         
         experiment=accept_time/m
     if method=='special_blended' or method=="optimizing_blended":

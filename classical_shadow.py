@@ -42,7 +42,7 @@ def classical_shadow(copies,d,m,povm_set,state):
         
     for i in range(copies):
         
-        outcome_matrix=np.outer(measure_outcome_set[i].T.conj(),measure_outcome_set[i])
+        outcome_matrix=np.outer(measure_outcome_set[i],measure_outcome_set[i].T.conj())
     
         snapshot=((2**num_system_qubit)+1)*(U_set[i].conj().T@outcome_matrix@U_set[i])-np.eye(d)
         # snapshot=(U_set[i].conj().T@outcome_matrix@U_set[i])
@@ -53,7 +53,10 @@ def classical_shadow(copies,d,m,povm_set,state):
     # print(np.trace(predicted_state))
     # show_probability_povm(measurements,predicted_state,True)
     # show_probability_povm(measurements,roh,True)
-    output=split_shadow_median(povm_set, classical_shadow_set,1)
+    
+    k=10
+    
+    output=split_shadow_median(povm_set, classical_shadow_set,k)
     
     
     correct = [0 if i <m/2 else 1 for i in range(m)]

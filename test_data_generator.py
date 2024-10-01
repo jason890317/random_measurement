@@ -58,7 +58,7 @@ def save_data_to_json(file_path, data):
         json.dump(data, file, indent=4)
 
 def main():
-    special_methods = {"optimizing_blended","interweave", "special_blended", "blended_three", "classical_shadow"}
+    special_methods = {"optimizing_blended","interweave", "special_blended", "blended_three", "classical_shadow","special_random"}
     total_methods = {"special_blended", "special_random", "interweave", "blended_three", "classical_shadow", "optimizing_blended","blended", "random"}
     
     
@@ -78,7 +78,7 @@ def main():
         
         ]
     method_s = ["classical_shadow"] 
-    copies_s = [1,2,3,20]
+    copies_s = [1]
     rank_s = {2:[1], 4:[2], 8:[3], 16:[8], 32:[16], 64:[32]}
     file_path ="./test_script/"+ sys.argv[1]
 
@@ -86,7 +86,7 @@ def main():
     case_1_low = 0.1                 
     case_2_pro = 0.01
     test_time = 100                    
-    average_time = 50          
+    average_time =100          
     case =1
 
     validate_parameters(d_s, m_s, gate_num_times, method_s, total_methods)

@@ -368,8 +368,11 @@ def random_sequences_circuit(povm,state,m,pro_h):
     highest_pro_povm=[]
     roh=np.outer(state,state.conj().T)
     
-    np.random.shuffle(povm)
+    indices=np.arange(len(povm))
     
+    # np.random.shuffle(povm)
+    np.random.shuffle(indices)
+    povm= povm[indices]
     U=[]
     
     num_ancilla_qubit = 1 # total number of qubits for system
@@ -407,7 +410,7 @@ def random_sequences_circuit(povm,state,m,pro_h):
         
         
     
-    return (qc,highest_pro_povm)
+    return (qc,indices)
 
 
 

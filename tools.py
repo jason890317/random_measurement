@@ -104,19 +104,29 @@ def xor_binary_strings(str1, str2):
     result = ''.join('1' if b1 != b2 else '0' for b1, b2 in zip(str1, str2))
 
     return result
-def resolve_random_result_case_special(counts,high):
-    keys=list(counts.keys())
+def resolve_random_result_case_special(count_set,m):
     
-    keys[0]=keys[0][::-1]
-    ans = ''.join('0' if i in high else '1' for i in range(len(keys[0])))
-    # print("ans: "+ans)
-    # print(keys)
-    ans = xor_binary_strings(ans,keys[0])
     accept_time=0
-    for item in ans:
-        if item=='0':
-            accept_time+=1
-        
+    check_array=[0 for i in range(m)]
+    correct = [0 if i <m/2 else 1 for i in range(m)]
+    vote=[0 for _ in range(int(m))]
+    for item in count_set:
+    
+        keys=list(item[0].keys())
+        keys=keys[0][::-1]
+        # ans = ''.join('0' if i in item[1] else '1' for i in range(len(keys[0])))
+        print("ans: "+str(item[1]))
+        print(keys)
+        for i in range(len(keys)):
+            if keys[i]=='0':
+                vote[item[1][i]]+=1
+    print(f'vote: {vote}')
+    for item in top_half_indices(vote):
+        check_array[item]=1
+    print(check_array)
+    print()
+    xor_result = [a ^ b for a, b in zip(check_array, correct)]
+    accept_time=xor_result.count(0)
     return(accept_time) 
    
        
