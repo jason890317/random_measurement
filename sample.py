@@ -5,7 +5,7 @@ from scipy.stats import unitary_group
 from generate_vector import generate_first_vector
 
 ############################################## generate povm by rotating projector #####################################
-def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, batch_size=1000, n_jobs=-1,perturbation=1e-3):
+def sample_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, batch_size=1000, n_jobs=-1,perturbation=1e-3):
     
     
     # Determine the number of high and low probability matrices
@@ -34,22 +34,17 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
     # Generate low-probability POVMs
     while len(povm) < number_of_low:
         
-        #generate the special vector
+      
         
-        #generate random unitary to rotate the projector
-        U=yieldRandomUnitary(d)
+        U=unitary_group.rvs(d)
+
         temp=U.T.conj()@projector@U
+
         
-        
-        while np.trace(temp@roh)>low_pro:
-            U=yieldRandomUnitary(d)
-            temp=U.T.conj()@projector@U
-        
-        #rotating
-        
-       
         #append povm to the set
-        if np.allclose(temp@temp,temp,atol=(1e-14)):
+        if np.allclose(temp@temp,temp,atol=(1e-14)) and np.trace(temp@roh)<low_pro and np.trace(temp@roh)>0.003 :
+            
+            print(np.trace(temp@roh))
             povm.append(temp)
         
         sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
@@ -58,16 +53,15 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
     # Generate high-probability POVMs
     while len(povm) < m:
         
-        U=yieldRandomUnitary(d)
+        U=unitary_group.rvs(d)
+
         temp=U.T.conj()@projector@U
-        
-        
-        while np.trace(temp@roh)<high_pro:
-            U=yieldRandomUnitary(d)
-            temp=U.T.conj()@projector@U
+
         
         #append povm to the set
-        if np.allclose(temp@temp,temp,atol=(1e-14)):
+        if np.allclose(temp@temp,temp,atol=(1e-14)) and np.trace(temp@roh)>high_pro:
+            
+            print(np.trace(temp@roh))
             povm.append(temp)
         
         sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
@@ -76,9 +70,10 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
     return povm
 
     
-def yieldRandomUnitary(d):
+def yieldRandomUnitary(d,epson_vector):
     
     A=unitary_group.rvs(d)
+    A[:, 0] = epson_vector
     U, R = np.linalg.qr(A)
 
     return U

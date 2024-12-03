@@ -54,7 +54,7 @@ def classical_shadow(copies,d,m,povm_set,state):
     # show_probability_povm(measurements,predicted_state,True)
     # show_probability_povm(measurements,roh,True)
     
-    k=10
+    k=1
     
     output=split_shadow_median(povm_set, classical_shadow_set,k)
     

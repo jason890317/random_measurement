@@ -16,6 +16,9 @@ def generate_first_vector(d,p,rank):
     
     n=d-rank####!!!!!!!!!!!!
     m=rank
+    
+    # n=int(d/2)
+    # m=int(d/2)
     # Generate random complex numbers with positive real parts for ai and bi
     real_a = np.random.rand(n)
     imag_a = np.random.randn(n)

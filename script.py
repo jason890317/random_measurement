@@ -69,9 +69,11 @@ if __name__=="__main__":
             print("\n")
             
         test_data["result"]={}
-        test_data["result"]["experiment"]=np.mean(experiment_raw_data)
-        test_data["result"]["theorem"]=np.mean(theorem_raw_data)
-    
+        # test_data["result"]["experiment"]=np.mean(experiment_raw_data)
+        # test_data["result"]["theorem"]=np.mean(theorem_raw_data)
+        test_data["result"]["experiment"]=experiment_raw_data
+        test_data["result"]["theorem"]=theorem_raw_data
+
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 

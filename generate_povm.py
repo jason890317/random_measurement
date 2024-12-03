@@ -36,6 +36,7 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
         
         #generate the special vector
         p=distribution(0.003,low_pro)
+
         epson_vector_l=generate_first_vector(d,p,rank)
         
         #generate random unitary to rotate the projector
@@ -43,9 +44,11 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
         
         #rotating
         temp=U.T.conj()@projector@U
-       
+
+        
         #append povm to the set
-        if np.allclose(temp@temp,temp,atol=(1e-14)):
+        if np.allclose(temp@temp,temp,atol=(1e-14)) and np.trace(temp@roh)<low_pro:
+            print(np.trace(temp@roh))
             povm.append(temp)
         
         sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
@@ -65,7 +68,8 @@ def generate_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, b
         temp=U.T.conj()@projector@U
         
         #append povm to the set
-        if np.allclose(temp@temp,temp,atol=(1e-14)):
+        if np.allclose(temp@temp,temp,atol=(1e-14)) and np.trace(temp@roh)>high_pro:
+            print(np.trace(temp@roh))
             povm.append(temp)
         
         sys.stdout.write(f"\rpovm : {len(povm)}/{m}")
