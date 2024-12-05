@@ -168,7 +168,7 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         
         
         blended_set=blended_measurement(povm_set,d,m)
-        blended_set=[ item@item.T.conj() for item in blended_set]
+   
         
         #############################################################################
         
