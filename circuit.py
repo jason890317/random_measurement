@@ -1,432 +1,340 @@
 from numpy.linalg import svd
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.linalg import sqrtm
-from scipy.linalg import svd
 from qiskit.circuit.library import UnitaryGate
-import random
-from qiskit import transpile
 from qiskit_aer import Aer
-from qiskit.visualization import circuit_drawer
-# def check_for_rank_one(povm):
-#     """
-#     function to check if a povm is a rank-1 povm
-#     """
-#     rank_one = True
-#     for p in povm:
-#         if np.linalg.matrix_rank(p)!=1:
-#             rank_one = False
-#             return rank_one
-#         else:
-#             continue
-#     return rank_one
-            
-# # %%
-# def compute_rank_one_unitary(povm, atol=1e-13, rtol=0):
-#     """
-#     This function computes the unitary that rotates the system to the Hilbert space of the ancilla
-#     Input:  POVM ---> a list of the elements of POVM
-#     Output: Unitary matrix
-#     """
-           
-#     # check if povm is a rank-1 povm:
-#     assert check_for_rank_one(povm), "This is not a rank-1 povm"
-#     new_povm = []
-#     for p in povm:
-#         if np.log2(len(povm))%2==0: #still under investigation
-#             w, v = np.linalg.eig(p)
-#         else: 
-#             w, v = np.linalg.eigh(p) #note the that the eigenvenvector is computer for hermitian eigh
-#         for eigenvalue, engenvector in zip(w,v):
-#             if np.isclose(np.abs(eigenvalue), 0):
-#                 continue
-#             else:
-#                 new_p = np.sqrt(eigenvalue)*engenvector
-#                 new_povm.append(new_p)
-#     v = np.vstack(new_povm) # arrange the povm elements to form a matrix of dimension: Row X Col*len(povm)
-#     v = np.atleast_2d(v.T) # convert to 2d matrix
-    
-#     u, s, vh = svd(v)    # apply svd
-#     tol = max(atol, rtol * s[0])
-#     nnz = (s >= tol).sum()
-#     ns = vh[nnz:]         # missing rows of v
-    
-#     # add the missing rows of v to v
-#     V = np.vstack((v, ns)) 
-    
-    
-#     # make the unitary a square matrix of dimension N=2^n where n = int(np.ceil(np.log(V.shape[0])))
-#     n = int(np.ceil(np.log2(V.shape[0])))
-#     N = 2**n      # dimension of system and ancilla Hilber space
-#     r,c = V.shape  
-    
-#     U = np.eye(N, dtype=complex) # initialize Unitary matrix to the identity. Ensure it is complex
-#     U[:r,:c] = V[:r,:c] # assign all the elements of V to the corresponding elements of U
-    
-#     U = U.conj().T  # Transpose the unitary so that the rows are the povm
-    
-#     # check for unitarity of U
-    
-#     # check for unitarity of U
-    
-#     assert np.allclose(U.T.conj()@U, np.eye(N),atol=1e-13), "Failed to construct U"
-    
-#     return U
-    
-# # %%
-# # Using the original unitary generator
 
 def compute_full_rank_unitary(povm, atol=1e-13, rtol=0):
     """
-    This function computes the unitary that rotates the system to the Hilbert space of the ancilla
-    Input:  POVM ---> a list of the elements of POVM
-    Output: Unitary matrix
+    Compute a full-rank unitary matrix that maps a POVM into an extended Hilbert space.
+
+    Parameters:
+    - povm: List of POVM elements (positive semidefinite matrices).
+    - atol, rtol: Tolerances for singular value thresholding.
+
+    Returns:
+    - Unitary matrix (complex-valued).
     """
+    # Compute the square root of each POVM element
+    povm = [sqrtm(M) for M in povm]
     
-         
-    # Here square root of the POVM elements were used as a replacement for the vector that form the povm
-    povm = [sqrtm(M)for M in povm]
-   
-    v = np.hstack(povm) # arrange the povm elements to form a matrix of dimension: Row X Col*len(povm)
-    v = np.atleast_2d(v) # convert to 2d matrix
-    v=v.astype('complex128')
-    u, s, vh = svd(v)    # apply svd
+    # Combine POVM elements into a single matrix
+    v = np.hstack(povm).astype('complex128')
+    v = np.atleast_2d(v)  # Ensure 2D matrix
+    
+    # Perform Singular Value Decomposition (SVD)
+    u, s, vh = svd(v)
+    
+    # Threshold singular values to determine null space
     tol = max(atol, rtol * s[0])
     nnz = (s >= tol).sum()
-    ns = vh[nnz:]         # missing rows of v
+    ns = vh[nnz:]  # Null space rows
     
-    # add the missing rows of v to v
-    V = np.vstack((v, ns)) 
+    # Complete the matrix with the null space
+    V = np.vstack((v, ns))
     
-    
-    # make the unitary a square matrix of dimension N=2^n where n = int(np.ceil(np.log(V.shape[0])))
+    # Determine size of extended Hilbert space
     n = int(np.ceil(np.log2(V.shape[0])))
-    N = 2**n      # dimension of system and ancilla Hilber space
-    r,c = V.shape  
+    N = 2**n  # Next power of 2
     
-    U = np.eye(N, dtype=complex) # initialize Unitary matrix to the identity. Ensure it is complex
-    U[:r,:c] = V[:r,:c] # assign all the elements of V to the corresponding elements of U
+    # Embed V into an identity matrix of the extended space
+    unitary = np.eye(N, dtype=complex)
+    unitary[:V.shape[0], :V.shape[1]] = V
+    unitary = unitary.conj().T  # Transpose for proper embedding
     
+    # Verify that unitary is unitary
+    # assert np.allclose(unitary.T.conj() @ unitary, np.eye(N), atol=1e-8), "Failed to construct unitary"
     
-    U = U.conj().T  # Transpose the unitary so that the rows are the povm
+    return unitary
+
+
+def initialize_quantum_circuit(state, N,m):
+    """
+    Initialize a quantum circuit with system, ancilla, and classical registers.
+
+    Parameters:
+    - state: Initial quantum state (array or list).
+    - unitary: Optional unitary matrix to convert into a gate.
+    - inverse_unitary: Optional inverse unitary matrix to convert into a gate.
+    - m: Number of repetitions for the measurement process (default: 1).
+
+    Returns:
+    - QuantumCircuit: The initialized quantum circuit.
+    - system_reg: System quantum register.
+    - ancilla_reg: Ancilla quantum register.
+    - classical_reg: Classical register for measurements.
+    """
+    # Determine the number of qubits for the system and ancilla
+    dim_system = state.shape[1]
+    num_system_qubit = int(np.ceil(np.log2(dim_system)))  # System qubits
+    num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit  # Ancilla qubits
+
+    # Initialize quantum and classical registers
+    system_reg = QuantumRegister(num_system_qubit, name='system')
+    ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla')
+    classical_reg = ClassicalRegister(num_ancilla_qubit * m, name='measure')
+
+    # Create the initial quantum circuit
+    initial_quantum_circuit = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
+    initial_quantum_circuit.initialize(state[0], system_reg)  # Initialize the system state
+
+    return initial_quantum_circuit, system_reg, ancilla_reg, classical_reg, num_ancilla_qubit
+
+
+
+
+def construct_blended_circuit(state, unitary, m):
+    """
+    Construct a quantum circuit for the blended measurement procedure.
+
+    Parameters:
+    - state: Initial quantum state.
+    - unitary: Unitary matrix embedding the POVM.
+    - m: Number of repetitions of the measurement process.
+
+    Returns:
+    - quantum circuit: The constructed quantum circuit.
+    """
     
-    
-    # check for unitarity of U
-    # print(U.T.conj()@U)
-    assert np.allclose(U.T.conj()@U, np.eye(N),atol=1e-8), "Failed to construct U"
-    
-    return U
-
-# %%
-# def rank_one_circuit(povm, state, U):
-    
-#     # Define the quantum and classical registers
-#     dim_system = state.shape[1] # dimension of state
-#     num_system_qubit = int(np.ceil(np.log2(dim_system))) # total number of qubits for system
-
-#     system_reg = QuantumRegister(num_system_qubit, name='system') # system register
-
-#     N = U.shape[0] # Dimension of the unitary to be applied to system and ancilla
-
-#     num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit # total number of qubits for system
-
-#     ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla') # ancilla register
-
-#     U_gate = UnitaryGate(U, label='U') # unitary gate to be applied between system and ancilla
-    
-    
-#     # create the quantum circuit for the system and ancilla
-#     qc = QuantumCircuit(system_reg, ancilla_reg, name='circuit')
-#     qc.initialize(state[0],system_reg)
-
-#     # reset ancilla to zero
-#     qc.reset(ancilla_reg)
-
-#     # append the unitary gate
-#     qc.append(U_gate, range(system_reg.size + ancilla_reg.size))
-
-#     # measure only the ancilliary qubits
-#     qc.measure_all()
-    
-#     return qc
-
-# # %%
-# def full_rank_circuit(povm, state, U):
-    
-#     # Define the quantum and classical registers
-#     dim_system = state.shape[1] # dimension of state
-#     num_system_qubit = int(np.ceil(np.log2(dim_system))) # total number of qubits for system
-
-#     system_reg = QuantumRegister(num_system_qubit, name='system') # system register
-
-#     N = U.shape[0] # Dimension of the unitary to be applied to system and ancilla
-
-#     num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit # total number of qubits for system
-
-#     ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla') # ancilla register
-
-#     classical_reg = ClassicalRegister(num_ancilla_qubit, name='measure') # classical register
-
-#     U_gate = UnitaryGate(U, label='U') # unitary gate to be applied between system and ancilla
+    # Dimension of the unitary matrix
+    N = unitary.shape[0]  
     
     
-#     # create the quantum circuit for the system and ancilla
-#     qc = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
-#     qc.initialize(state[0],system_reg)
+    # initialize a quantum circuit with system, ancilla, and classical registers
+    quantum_circuit, system_reg, ancilla_reg, classical_reg ,num_ancilla_qubit= initialize_quantum_circuit(state,N, m)
 
-#     # reset ancilla to zero
-#     qc.reset(ancilla_reg)
 
-#     # append the unitary gate
-#     qc.append(U_gate, range(system_reg.size + ancilla_reg.size))
+    # Make unitary into quantum gate
+    unitary_quantum_gate = UnitaryGate(unitary, label='unitary')
+    quantum_circuit = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
+   
 
-#     # measure only the ancilliary qubits
-#     qc.measure(ancilla_reg, classical_reg)
+    # Add the unitary operation and measurement m times
+    for i in range(m):
+        quantum_circuit.reset(ancilla_reg)  # Reset ancilla qubits
+        quantum_circuit.append(unitary_quantum_gate, range(system_reg.size + ancilla_reg.size))  # Apply unitary
+        quantum_circuit.measure(ancilla_reg, classical_reg[i * num_ancilla_qubit:(i + 1) * num_ancilla_qubit])  # Measure ancilla
+
+    return quantum_circuit
+
+def blended_circuit(blended_set, state, implete_times):
+    """
+    Create a blended measurement circuit for a given POVM set.
+
+    Parameters:
+    - blended_set: List of POVM elements.
+    - state: Initial quantum state.
+    - implete_times: Number of repetitions for the measurement process.
+
+    Returns:
+    - QuantumCircuit: The blended measurement quantum circuit.
+    """
+    # Compute the unitary matrix for the blended POVM set
+    unitary_of_blended_set = compute_full_rank_unitary(blended_set)
     
-#     return qc
+    # Construct the quantum circuit using the unitary matrix
+    return construct_blended_circuit(state, unitary_of_blended_set, implete_times)
 
-# # %%
-# def construct_quantum_circuit(povm, state):
+
+def construct_interweave_blended_circuit(state, unitary, inverse_unitary, m):
+    """
+    Construct a quantum circuit for the interweave blended measurement procedure.
+
+    Parameters:
+    - state: Initial quantum state (array or list).
+    - unitary: Unitary matrix for the normal operation.
+    - inverse_unitary: Unitary matrix for the inverse operation.
+    - m: Number of repetitions of the measurement process.
+
+    Returns:
+    - QuantumCircuit: The constructed interweave blended quantum circuit.
+    """
     
-#     # compute unitary matrix
-#     if check_for_rank_one(povm):
-#         U = compute_rank_one_unitary(povm)
-#         qc = rank_one_circuit(povm, state, U)
-#     else:
-#         U = compute_full_rank_unitary(povm)
-#         qc = full_rank_circuit(povm, state, U)
+    # Dimension of the unitary matrix
+    N = unitary.shape[0]  
     
-#     return qc
-
-def blended_circuit(povm, state, U,m):
+    # Initialize a quantum circuit with system, ancilla, and classical registers
+    quantum_circuit, system_reg, ancilla_reg, classical_reg ,  num_ancilla_qubit= initialize_quantum_circuit(state,N, m)
     
-    # Define the quantum and classical registers
-    dim_system = state.shape[1] # dimension of state
-    num_system_qubit = int(np.ceil(np.log2(dim_system))) # total number of qubits for system
+    # Make unitary into quantum gates
+    unitary_quantum_gate = UnitaryGate(unitary, label='unitary')
+    inverse_unitary_quantum_gate = UnitaryGate(inverse_unitary, label='inverse_unitary')
+   
 
-    system_reg = QuantumRegister(num_system_qubit, name='system') # system register
+    # Interweave normal and inverse operations and measure ancilla
+    for i in range(m):
+        quantum_circuit.reset(ancilla_reg)  # Reset ancilla qubits
+        # Apply inverse_unitary for even iterations, unitary for odd iterations
+        quantum_circuit.append(inverse_unitary_quantum_gate if i % 2 == 0 else unitary_quantum_gate, range(system_reg.size + ancilla_reg.size))
+        quantum_circuit.measure(ancilla_reg, classical_reg[i * num_ancilla_qubit:(i + 1) * num_ancilla_qubit])  # Measure ancilla
 
-    N = U.shape[0] # Dimension of the unitary to be applied to system and ancilla
+    return quantum_circuit
 
-    num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit # total number of qubits for system
+def interweave_blended_circuit(blended_set, inverse_blended_set, state, implete_times):
+    """
+    Create a circuit for the interweave blended measurement procedure.
 
-    ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla') # ancilla register
+    Parameters:
+    - blended_set: List of POVM elements for the forward operation.
+    - inverse_blended_set: List of POVM elements.
+    - state: Initial quantum state.
+    - implete_times: Number of repetitions for the measurement process.
 
-    classical_reg = ClassicalRegister(num_ancilla_qubit*m, name='measure') # classical register
-
-    U_gate = UnitaryGate(U, label='U') # unitary gate to be applied between system and ancilla
+    Returns:
+    - QuantumCircuit: The interwoven blended quantum circuit.
+    """
+    # Compute unitary matrices for normal and inverse blended sets
+    unitary_of_inverse_blended_set = compute_full_rank_unitary(inverse_blended_set)
+    unitary_of_blended_set = compute_full_rank_unitary(blended_set)
     
+    # Construct the interweave blended circuit
+    return construct_interweave_blended_circuit(state, unitary_of_blended_set, unitary_of_inverse_blended_set, implete_times)
+
+
+def three_outcome_blended_circuit(blended_set, state, implete_times):
+    """
+    Create a circuit for the three-outcome blended measurement procedure.
+
+    Parameters:
+    - blended_set: List of POVM elements.
+    - state: Initial quantum state.
+    - implete_times: Number of repetitions for the measurement process.
+
+    Returns:
+    - QuantumCircuit: The constructed three-outcome blended quantum circuit.
+    """
+    # Compute unitary matrices for three-outcome blended set
+    unitary_of_three_outcome_bleneded_set = [compute_full_rank_unitary(item) for item in blended_set]
     
-    # create the quantum circuit for the system and ancilla
-    qc = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
-    qc.initialize(state[0],system_reg)
+    # Construct the quantum circuit for the three-outcome blended measurement
+    return construct_three_outcome_blended_circuit(state, unitary_of_three_outcome_bleneded_set, implete_times)
 
-    for i in range(0,m):
 
-        # reset ancilla to zero
-        qc.reset(ancilla_reg)
+def construct_three_outcome_blended_circuit(state, unitary, m):
+    """
+    Construct the three-outcome blended measurement quantum circuit.
 
-        # append the unitary gate
-        qc.append(U_gate, range(system_reg.size + ancilla_reg.size))
+    Parameters:
+    - state: Initial quantum state.
+    - unitary: List of unitary matrices corresponding to the three-outcome measurement.
+    - m: Number of repetitions for the measurement process.
 
-        # measure only the ancilliary qubits
-        qc.measure(ancilla_reg, classical_reg[i*num_ancilla_qubit:i*num_ancilla_qubit+num_ancilla_qubit])
+    Returns:
+    - QuantumCircuit: The constructed quantum circuit.
+    """
+
+    # Dimension of the unitary matrix
+    N = unitary[0].shape[0]  
+
     
-    return qc
+    # initialize a quantum circuit with system, ancilla, and classical registers
+    quantum_circuit, system_reg, ancilla_reg, classical_reg ,num_ancilla_qubit= initialize_quantum_circuit(state,N, m)
+   
 
-def construct_blended_circuit(blended_set,state,implete_times):
-    
-    U_blended=compute_full_rank_unitary(blended_set)
-    qc=blended_circuit(blended_set,state,U_blended,implete_times)
-    
-    return qc
+    # Make unitary into quantum gates
+    unitary_quantum_gate = [UnitaryGate(u, label='unitary') for u in unitary]
 
-def blended_circuit_inverse(povm, state, U,U_inv,m):
-    
-    # Define the quantum and classical registers
-    dim_system = state.shape[1] # dimension of state
-    num_system_qubit = int(np.ceil(np.log2(dim_system))) # total number of qubits for system
+    # Add unitary operations and measurements for each repetition
+    for i in range(m):
+        quantum_circuit.reset(ancilla_reg)  # Reset ancilla qubits
+        quantum_circuit.append(unitary_quantum_gate[i], range(system_reg.size + ancilla_reg.size))  # Apply unitary
+        quantum_circuit.measure(ancilla_reg, classical_reg[i * num_ancilla_qubit:(i + 1) * num_ancilla_qubit])  # Measure ancilla
 
-    system_reg = QuantumRegister(num_system_qubit, name='system') # system register
+    return quantum_circuit
 
-    N = U.shape[0] # Dimension of the unitary to be applied to system and ancilla
 
-    num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit # total number of qubits for system
 
-    ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla') # ancilla register
 
-    classical_reg = ClassicalRegister(num_ancilla_qubit*m, name='measure') # classical register
+def random_sequences_circuit(povm, state, m, pro_h):
+    """
+    Construct a quantum circuit for the random sequences measurement procedure.
 
-    U_gate = UnitaryGate(U, label='U') # unitary gate to be applied between system and ancilla
-    U_inv_gate=UnitaryGate(U_inv,label='U_v')
-    
-    # create the quantum circuit for the system and ancilla
-    qc = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
-    qc.initialize(state[0],system_reg)
+    Parameters:
+    - povm: List of POVM elements.
+    - state: Initial quantum state.
+    - m: Number of measurements.
+    - pro_h: Probability threshold for selecting high-probability POVM elements.
 
-    for i in range(0,m):
+    Returns:
+    - QuantumCircuit: The constructed quantum circuit.
+    - indices: Shuffled indices of the POVM elements.
+    """
 
-        # reset ancilla to zero
-        qc.reset(ancilla_reg)
+    
+    # Determine the number of qubits for the system
+    dim_system = state.shape[1]
+    num_system_qubit = int(np.ceil(np.log2(dim_system)))  # System qubits
 
-        if i%2==0:
-        # # append the unitary gate
-            qc.append(U_inv_gate, range(system_reg.size + ancilla_reg.size))
-        elif i%2==1:
-            qc.append(U_gate, range(system_reg.size + ancilla_reg.size))
-        
-        
-        # measure only the ancilliary qubits
-        qc.measure(ancilla_reg, classical_reg[i*num_ancilla_qubit:i*num_ancilla_qubit+num_ancilla_qubit])
-    
-    return qc
+    # Initialize quantum and classical registers
+    system_reg = QuantumRegister(num_system_qubit, name='system')
+    num_ancilla_qubit = 1  # Single qubit for ancilla
+    ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla')
+    classical_reg = ClassicalRegister(num_ancilla_qubit * m, name='measure')
 
-def construct_blended_circuit_inverse(blended_set,blended_set_inverse,state,implete_times):
-    
-    U_blended_inverse=compute_full_rank_unitary(blended_set_inverse)
-    U_blended=compute_full_rank_unitary(blended_set)
-    qc=blended_circuit_inverse(blended_set,state,U_blended,U_blended_inverse,implete_times)
-    
-    return qc
+    # Create quantum circuit and initialize the system state
+    quantum_circuit = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
+    quantum_circuit.initialize(state[0], system_reg)
 
-def construct_three_outcome_unitary(blended_set_m):
-    
-    U=[]
-    
-    for item in blended_set_m:
-        u=compute_full_rank_unitary(item)
-        U.append(u)
-    
-    return U
-def construct_blended_three_outcome_circuit(blended_set,state,implete_times,m):
-    
-    U_set=construct_three_outcome_unitary(blended_set)
-    
-    dim_system = state.shape[1] # dimension of state
-    num_system_qubit = int(np.ceil(np.log2(dim_system))) # total number of qubits for system
+    # Compute the density matrix of the state
+    roh = np.outer(state, state.conj().T)
 
-    system_reg = QuantumRegister(num_system_qubit, name='system') # system register
-
-    N = U_set[0].shape[0] # Dimension of the unitary to be applied to system and ancilla
-
-    num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit # total number of qubits for system
-
-    ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla') # ancilla register
-
-    classical_reg = ClassicalRegister(num_ancilla_qubit*implete_times, name='measure') # classical register
-
-    # U_gate = UnitaryGate(U, label='U') # unitary gate to be applied between system and ancilla
-    # U_inv_gate=UnitaryGate(U_inv,label='U_v')
-    
-    U_gate_set=[]
-    
-    for item in U_set:
-        U_gate_set.append(UnitaryGate(item))
-    
-    
-    # create the quantum circuit for the system and ancilla
-    qc = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
-    qc.initialize(state[0],system_reg)
-
-    for i in range(0,implete_times):
-
-        # reset ancilla to zero
-        qc.reset(ancilla_reg)
-        
-        # # append the unitary gate
-        qc.append(U_gate_set[i], range(system_reg.size + ancilla_reg.size))
-    
-        # measure only the ancilliary qubits
-        qc.measure(ancilla_reg, classical_reg[i*num_ancilla_qubit:i*num_ancilla_qubit+num_ancilla_qubit])
-    
-    return qc
-
-def test_blended_circuit(qc,num_shot,backend='qasm_simulator'):
-    
-    backend_options = {
-    'max_parallel_threads': 10, # batch 10
-    'max_memory_mb': 16384,
-    }
-    backend = Aer.get_backend(backend)
-    backend.set_options(**backend_options)
-    result = backend.run(qc,shots=num_shot).result()
-    counts = result.get_counts(qc)
-    
-#    config = backend.configuration()
-
- #   print("Max memory (MB):", config)
-    return counts
-
-def random_sequences_circuit(povm,state,m,pro_h):
-    
-    dim_system = state.shape[1] # dimension of state
-    num_system_qubit = int(np.ceil(np.log2(dim_system))) # total number of qubits for system
-    system_reg = QuantumRegister(num_system_qubit, name='system') # system register
-    
-    
-    highest_pro_povm=[]
-    roh=np.outer(state,state.conj().T)
-    
-    indices=np.arange(len(povm))
-    
-    # np.random.shuffle(povm)
+    # Shuffle POVM indices for randomness
+    indices = np.arange(len(povm))
     np.random.shuffle(indices)
-    povm= povm[indices]
-    U=[]
-    
-    num_ancilla_qubit = 1 # total number of qubits for system
+    povm = povm[indices]  # Shuffle POVM elements
 
-    ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla') # ancilla register
+    # Track POVM elements with probabilities exceeding the threshold
+    highest_pro_povm = []
 
-    classical_reg = ClassicalRegister(num_ancilla_qubit*m, name='measure') # classical register
-
-    
-    
-    # create the quantum circuit for the system and ancilla
-    qc = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
-    qc.initialize(state[0],system_reg)
-    # print("povm: ")
+    # Iterate through shuffled POVM elements
     for p in range(len(povm)):
-        atol = 1e-07
-        if np.trace(povm[p]@roh) > (pro_h - atol):
-            
+        # Check if the POVM element's trace with the density matrix exceeds the threshold
+        if np.trace(povm[p] @ roh) > (pro_h - 1e-07):
             highest_pro_povm.append(p)
-            
-        # print(povm[p])
-       
-        p_inv=np.eye(dim_system)-povm[p]
-        u=compute_full_rank_unitary([povm[p],p_inv])
-        # print(U[i])
-        # reset ancilla to zero
-        qc.reset(ancilla_reg)
-        U_gate = UnitaryGate(u, label='U') # unitary gate to be applied between system and ancilla
-        # append the unitary gate
-        qc.append(U_gate, range(system_reg.size + ancilla_reg.size))
 
-        # measure only the ancilliary qubits
-        qc.measure(ancilla_reg, classical_reg[p*num_ancilla_qubit:p*num_ancilla_qubit+num_ancilla_qubit])    
+        # Compute the complementary operator and construct a unitary
+        p_inv = np.eye(dim_system) - povm[p]
+        u = compute_full_rank_unitary([povm[p], p_inv])
 
-        
-        
+        # Reset ancilla qubits
+        quantum_circuit.reset(ancilla_reg)
+
+        # Apply the unitary operation
+        unitary_quantum_gate = UnitaryGate(u, label='unitary')
+        quantum_circuit.append(unitary_quantum_gate, range(system_reg.size + ancilla_reg.size))
+
+        # Measure ancilla qubits
+        quantum_circuit.measure(ancilla_reg, classical_reg[p * num_ancilla_qubit:(p + 1) * num_ancilla_qubit])
     
-    return (qc,indices)
+    # Also return the indices of the highest probability POVM elements for further count the accepting probability in tool.py
+    return quantum_circuit, indices
 
 
 
-def test_random_circuit(qc,num_shot,backend='qasm_simulator'):
-    
+def run_circuit(quantum_circuit, num_shot, backend='qasm_simulator', memory=False):
+    """
+    Simulate a quantum circuit and retrieve measurement counts.
+
+    Parameters:
+    - quantum_circuit: The quantum circuit to simulate.
+    - num_shot: Number of shots (simulations) to perform.
+    - backend: Qiskit backend for simulation (default: 'qasm_simulator').
+    - memory: If True, retrieves the individual measurement outcomes for each shot.
+
+    Returns:
+    - dict: Measurement counts from the simulation.
+    """
+    # Configure backend simulation options
     backend_options = {
-    'max_parallel_threads': 10, # batch 10
-    'max_memory_mb': 16384,
-    
+        'max_parallel_threads': 10,  # Maximum parallel threads for efficiency
+        'max_memory_mb': 16384,  # Allocate maximum memory
     }
-    backend = Aer.get_backend(backend)
-    backend.set_options(**backend_options)
-    result = backend.run(qc,shots=num_shot, memory=True).result()
-    counts = result.get_counts(qc)
-    # print(result.get_memory(qc))
-#    config = backend.configuration()
+    backend_instance = Aer.get_backend(backend)  # Get the specified backend
+    backend_instance.set_options(**backend_options)  # Apply backend options
 
- #   print("Max memory (MB):", config)
-    return counts
+    # Run the simulation
+    result = backend_instance.run(quantum_circuit, shots=num_shot, memory=memory).result()
+
+    # Return the measurement counts
+    return result.get_counts(quantum_circuit)

@@ -10,7 +10,7 @@ import sys
 from sample import sample_povm_general
 def checkBlednedMeasurement(povm,generation_args):
     blended_set=blended_measurement(povm,generation_args[1],generation_args[2])
-    blended_set=[ item@item.T.conj() for item in blended_set]
+    # blended_set=[ item@item.T.conj() for item in blended_set]
    
     return isValidityPOVM(blended_set)
 def checkRandomMeasurement(povm,generation_args):

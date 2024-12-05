@@ -5,13 +5,13 @@ from tools import (
     resolve_blended_result_case_interweave, generate_permutations, resolve_blended_three_result,
     resolve_random_result_case_2
 )
-
-from blended_measurement import blended_measurement, blended_measurement_inverse,optimizing_blended_measurement
-from circuit import (
-    construct_blended_circuit, test_blended_circuit, random_sequences_circuit, test_random_circuit,
-    construct_blended_circuit_inverse, construct_blended_three_outcome_circuit
+from blended_measurement import (
+    blended_measurement, inverse_blended_measurement, optimizing_blended_measurement, three_outcome_blended_measurement
 )
-from scipy.linalg import sqrtm
+from circuit import (
+    blended_circuit, random_sequences_circuit, run_circuit,
+    interweave_blended_circuit, three_outcome_blended_circuit
+)
 
 def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time,case_1_high,method):
     
@@ -23,7 +23,7 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         for i in range(copies):
             qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
             # print(high)
-            counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+            counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
             
             count_set.append([counts,high])
         # print(counts)
@@ -41,16 +41,16 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         elif method=="special_blended":
             blended_set=blended_measurement(povm_set,d,m)
         
-        blended_set=[ item@item.T.conj() for item in blended_set]
+        # blended_set=[ item@item.T.conj() for item in blended_set]
         # povm_set_pro=show_probability_povm(blended_set,roh_0,False)
         
         counts_set=[]
         
         for _ in range(copies):    
-            qc=construct_blended_circuit(blended_set,state,int(gate_num_times*m))
+            qc=blended_circuit(blended_set,state,int(gate_num_times*m))
             
             # print(high)
-            counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+            counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
             counts_set.append(counts)
             
         accept_time=resolve_blended_result_case_special(counts_set,m,gate_num_times)
@@ -66,16 +66,16 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         accept_time=0
         # povm_set_pro=show_probability_povm(povm_set,roh_0,True)
         blended_set=blended_measurement(povm_set,d,m)
-        blended_set=[ item@item.T.conj() for item in blended_set]
-        blended_set_inv=blended_measurement_inverse(povm_set,d,m)
-        blended_set_inv=[ item@item.T.conj() for item in blended_set_inv]
+        # blended_set=[ item@item.T.conj() for item in blended_set]
+        blended_set_inv=inverse_blended_measurement(povm_set,d,m)
+        # blended_set_inv=[ item@item.T.conj() for item in blended_set_inv]
         
         # povm_set_pro=show_probability_povm(blended_set,roh_0,False)
         counts_set=[]
         for _ in range(copies):
-            qc=construct_blended_circuit_inverse(blended_set,blended_set_inv,state,int(gate_num_times*m))
+            qc=interweave_blended_circuit(blended_set,blended_set_inv,state,int(gate_num_times*m))
             # print(high)
-            counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+            counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
             #print(counts)
             counts_set.append(counts)
             
@@ -89,48 +89,14 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         
         
         permutation=generate_permutations(m,int(5*m))
-        permutation = [list(t) for t in permutation]
-        # print(permutation)
-        # print("test: "+str(test_itr))
-        
-        three_outcome_blended_set=[]
-        
-        sum_set=np.zeros((d, d), dtype=np.complex128)
-        for item in povm_set:
-            sum_set+=item
-        identity=np.eye(d)
-        E_0=sqrtm(identity-sum_set/m)
-        E_0=E_0.astype('complex128')
-        
-        for round_itr in range(int(5*m)):
-            sum_set_1=np.zeros((d, d), dtype=np.complex128)
-            sum_set_2=np.zeros((d, d), dtype=np.complex128)
-            # print(permutation[round_itr])
-            E=[]
-            E.append(E_0)
-            for i in range(m):
-                if permutation[round_itr][i]==1:
-                    sum_set_1+= povm_set[i]
-                elif permutation[round_itr][i]==2:
-                    sum_set_2+=povm_set[i]
-            
-            temp_1=sqrtm(sum_set_1/int(m))
-            temp_1=temp_1.astype('complex128')
-            temp_2=sqrtm(sum_set_2/int(m))
-            temp_2=temp_2.astype('complex128')
-            E.append(temp_1)
-            E.append(temp_2)
-            blended_set=[ item@item.T.conj() for item in E]
-            # print(E)
-            three_outcome_blended_set.append(blended_set)
-        
+        three_outcome_blended_set=three_outcome_blended_measurement(povm_set,d,m,permutation)
         # for item in three_outcome_blended_set:
         #     show_probability_povm(item,roh_0,True)
         #     print()
         counts_set=[]
         for _ in range(copies):
-            qc=construct_blended_three_outcome_circuit(three_outcome_blended_set,state,int(5*m),m)
-            counts=test_blended_circuit(qc,1)
+            qc=three_outcome_blended_circuit(three_outcome_blended_set,state,int(5*m))
+            counts=run_circuit(qc,1)
             counts_set.append(counts)
             # print(counts)
         accept_time=resolve_blended_three_result(counts_set,m,permutation,int(5*m))
@@ -169,7 +135,7 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
             for i in range(test_time):
                 
                 qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
-                counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+                counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
                 check=resolve_random_result_case_1(counts,high)
                 if check:
                     accept_time+=1
@@ -178,7 +144,7 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         elif case==2:
             for i in range(test_time):
                 qc,_=random_sequences_circuit(povm_set,state,m,case_1_high)
-                counts=test_random_circuit(qc,num_shot=1,backend='qasm_simulator')
+                counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
                 check=resolve_random_result_case_2(counts)
                 if check:
                     accept_time+=1
@@ -208,11 +174,11 @@ def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time
         
         counts_set=[]
         
-        qc=construct_blended_circuit(blended_set,state,m)
+        qc=blended_circuit(blended_set,state,m)
         # print(povm_set)
         for i in range(int(test_time/50)):
             # print(f'\r{i}', end='', flush=True)
-            counts=test_blended_circuit(qc,50)
+            counts=run_circuit(qc,50)
             for item in counts.items():
                 counts_set.append(item)
         count_set_dict={}

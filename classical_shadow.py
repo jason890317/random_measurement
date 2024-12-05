@@ -1,78 +1,68 @@
-
 import numpy as np
-
-from tools import show_probability_povm,top_half_indices,split_shadow_median
+from tools import top_half_indices, split_shadow_median
 from scipy.stats import unitary_group
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
-import numpy as np
 from qiskit.circuit.library import UnitaryGate
-from circuit import test_blended_circuit
+from circuit import run_circuit
 
-def classical_shadow(copies,d,m,povm_set,state):
-  
-    # print(state)
-    U_set=[]
-    measure_outcome_set=[]
-    classical_shadow_set=[]
+def classical_shadow(copies, d, m, povm_set, state):
+    """
+    Compute the classical shadow and evaluate performance based on POVM sets.
+
+    Parameters:
+    - copies: Number of samples used.
+    - d: Dimension of the quantum system.
+    - m: Number of POVM elements.
+    - povm_set: List of POVM elements.
+    - state: Initial quantum state.
+
+    Returns:
+    - result (dict): A dictionary containing theoretical and experimental results.
+    """
     
-    num_system_qubit = int(np.ceil(np.log2(d)))
+    # Number of system qubits
+    num_system_qubit = int(np.ceil(np.log2(d)))  
     
-    for i in range(copies):
-        U=unitary_group.rvs(d)
-        U_set.append(U)
-        # print(U)
-    for i in range(copies):
+    # generate Random unitary matrices set
+    Haar_random_unitary_set = [unitary_group.rvs(d) for _ in range(copies)]  
+    
+    measure_outcomes = []  # Store measurement outcomes
+    classical_shadow_set = []  # Store shadow snapshots
+
+    for U in Haar_random_unitary_set:
         
-        system_reg = QuantumRegister(num_system_qubit, name='system') 
+        # Create and initialize the quantum circuit
+        system_reg = QuantumRegister(num_system_qubit, name='system')
         classical_reg = ClassicalRegister(num_system_qubit, name='measure')
-        qc= QuantumCircuit(system_reg, classical_reg, name='circuit')
-        # print(state)
-        qc.initialize(state[0],system_reg)
-        # print(U_set[i])
-        U_gate = UnitaryGate(U_set[i], label='U')
-        qc.append(U_gate, range(system_reg.size))
-        qc.measure(system_reg, classical_reg[:])
-        count=test_blended_circuit(qc,1)
-        measure_outcome=int(list(count)[0],2)
-        measure_outcome_bit_str=np.zeros(d)
-        measure_outcome_bit_str[measure_outcome]=1
-        # print(measure_outcome)
-        # print(measure_outcome_bit_str)
-        measure_outcome_set.append(measure_outcome_bit_str)
+        quantum_circuit = QuantumCircuit(system_reg, classical_reg, name='circuit')
+        quantum_circuit.initialize(state[0], system_reg)
+        quantum_circuit.append(UnitaryGate(U, label='U'), range(system_reg.size))
+        quantum_circuit.measure(system_reg, classical_reg)
+
+        # Run the circuit and record the measurement outcome
+        count = run_circuit(quantum_circuit, 1)
         
-    for i in range(copies):
+        # Get the outcome and turn the outcome into a vector
+        measure_outcome = int(list(count)[0], 2)
+        outcome_vector = np.zeros(d)
+        outcome_vector[measure_outcome] = 1
         
-        outcome_matrix=np.outer(measure_outcome_set[i],measure_outcome_set[i].T.conj())
-    
-        snapshot=((2**num_system_qubit)+1)*(U_set[i].conj().T@outcome_matrix@U_set[i])-np.eye(d)
-        # snapshot=(U_set[i].conj().T@outcome_matrix@U_set[i])
+        # Append the outcome vector to the list
+        measure_outcomes.append(outcome_vector)
+
+    # Construct the classical shadow by the procedure provided in "Predicting Many Properties of a Quantum System from Very Few Measurements"
+    for i, U in enumerate(Haar_random_unitary_set):
+        outcome_matrix = np.outer(measure_outcomes[i], measure_outcomes[i].T.conj())
+        snapshot = ((2**num_system_qubit) + 1) * (U.conj().T @ outcome_matrix @ U) - np.eye(d)
         classical_shadow_set.append(snapshot)
-    # print(classical_shadow_set)
-    # print(np.trace(classical_shadow_set[i]) for i in range(len(classical_shadow_set)))
-    # predicted_state=np.mean(classical_shadow_set,axis=0)
-    # print(np.trace(predicted_state))
-    # show_probability_povm(measurements,predicted_state,True)
-    # show_probability_povm(measurements,roh,True)
-    
-    k=1
-    
-    output=split_shadow_median(povm_set, classical_shadow_set,k)
-    
-    
-    correct = [0 if i <m/2 else 1 for i in range(m)]
-    check=[0 for _ in range(m)]
-    
-    # for idx in top_half_indices(output):
-    #     if idx>=int(m/2):
-    #         accept+=1
-    for idx in top_half_indices(output):
-        check[idx]=1
-    
-    print(correct)
-    print(check)
+
+    # Split shadow and evaluate the results based on the median method in "Predicting Many Properties of a Quantum System from Very Few Measurements"
+    output = split_shadow_median(povm_set, classical_shadow_set, 1)
+    correct = [0 if i < m / 2 else 1 for i in range(m)]
+    check = [1 if idx in top_half_indices(output) else 0 for idx in range(m)]
+
+    # Calculate acceptance with the prediction by classical shadow and the correct answer
     xor_result = [a ^ b for a, b in zip(check, correct)]
-    accept_time=xor_result.count(0)
-    
-    result={"theorem":0,"experiment":accept_time/int(m)}
-    
-    return result
+    accept_time = xor_result.count(0)
+
+    return {"theorem": 0, "experiment": accept_time / m}
