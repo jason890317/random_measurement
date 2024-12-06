@@ -1,4 +1,4 @@
-from event_learning_fuc import event_learning
+from event_learning_fuc import quantum_event_finding, quantum_event_identification
 from classical_shadow import classical_shadow
 from tools import print_progress
 import numpy as np
@@ -46,15 +46,20 @@ if __name__=="__main__":
         copies=test_data["copies"]
         gate_num_time=test_data["gate_num_time"]
         
-        if method=="special_blended" or method=="special_random" or method=="interweave" or method=="blended_three" or method=="classical_shadow" or method=="optimizing_blended":
+        if method=="special_blended" or method=="special_random" or method=="interweave" or method=="blended_three"  or method=="optimizing_blended":
+            excuted_function=quantum_event_identification
             povm_set_m=np.load(measurement_dir+'special'+'_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy')
-        else:
+        elif method=="classical_shadow":
+            excuted_function=classical_shadow
+            povm_set_m=np.load(measurement_dir+'special'+'_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy')
+        elif method=="random" or method=="blended":
+            excuted_function=quantum_event_finding
             povm_set_m=np.load(measurement_dir+'case_'+str(case)+'_d_'+str(d)+'_m_'+str(m)+"_r_"+str(rank)+'.npy')
             
         experiment_raw_data=[]
         theorem_raw_data=[]
         
-        excuted_function=classical_shadow if method=="classical_shadow" else event_learning
+        
         
         
         for i in range(average_time):

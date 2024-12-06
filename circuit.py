@@ -36,28 +36,28 @@ def compute_full_rank_unitary(povm, atol=1e-13, rtol=0):
     
     # Determine size of extended Hilbert space
     n = int(np.ceil(np.log2(V.shape[0])))
-    N = 2**n  # Next power of 2
+    dim_of_unitary = 2**n  # Next power of 2
     
     # Embed V into an identity matrix of the extended space
-    unitary = np.eye(N, dtype=complex)
+    unitary = np.eye(dim_of_unitary, dtype=complex)
     unitary[:V.shape[0], :V.shape[1]] = V
     unitary = unitary.conj().T  # Transpose for proper embedding
     
     # Verify that unitary is unitary
-    # assert np.allclose(unitary.T.conj() @ unitary, np.eye(N), atol=1e-8), "Failed to construct unitary"
+    # assert np.allclose(unitary.T.conj() @ unitary, np.eye(dim_of_unitary), atol=1e-8), "Failed to construct unitary"
     
     return unitary
 
 
-def initialize_quantum_circuit(state, N,m):
+def initialize_quantum_circuit(initial_state, dim_of_unitary,measurement_implemented_time):
     """
     Initialize a quantum circuit with system, ancilla, and classical registers.
 
     Parameters:
-    - state: Initial quantum state (array or list).
+    - initial_state: Initial quantum state (array or list).
     - unitary: Optional unitary matrix to convert into a gate.
     - inverse_unitary: Optional inverse unitary matrix to convert into a gate.
-    - m: Number of repetitions for the measurement process (default: 1).
+    - measurement_implemented_time: Number of repetitions for the measurement process (default: 1).
 
     Returns:
     - QuantumCircuit: The initialized quantum circuit.
@@ -66,43 +66,43 @@ def initialize_quantum_circuit(state, N,m):
     - classical_reg: Classical register for measurements.
     """
     # Determine the number of qubits for the system and ancilla
-    dim_system = state.shape[1]
+    dim_system = initial_state.shape[1]
     num_system_qubit = int(np.ceil(np.log2(dim_system)))  # System qubits
-    num_ancilla_qubit = int(np.ceil(np.log2(N))) - num_system_qubit  # Ancilla qubits
+    num_ancilla_qubit = int(np.ceil(np.log2(dim_of_unitary))) - num_system_qubit  # Ancilla qubits
 
     # Initialize quantum and classical registers
     system_reg = QuantumRegister(num_system_qubit, name='system')
     ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla')
-    classical_reg = ClassicalRegister(num_ancilla_qubit * m, name='measure')
+    classical_reg = ClassicalRegister(num_ancilla_qubit * measurement_implemented_time, name='measure')
 
     # Create the initial quantum circuit
     initial_quantum_circuit = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
-    initial_quantum_circuit.initialize(state[0], system_reg)  # Initialize the system state
+    initial_quantum_circuit.initialize(initial_state[0], system_reg)  # Initialize the system initial_state
 
     return initial_quantum_circuit, system_reg, ancilla_reg, classical_reg, num_ancilla_qubit
 
 
 
 
-def construct_blended_circuit(state, unitary, m):
+def construct_blended_circuit(initial_state, unitary, measurement_implemented_time):
     """
     Construct a quantum circuit for the blended measurement procedure.
 
     Parameters:
-    - state: Initial quantum state.
+    - initial_state: Initial quantum state.
     - unitary: Unitary matrix embedding the POVM.
-    - m: Number of repetitions of the measurement process.
+    - measurement_implemented_time: Number of repetitions of the measurement process.
 
     Returns:
     - quantum circuit: The constructed quantum circuit.
     """
     
     # Dimension of the unitary matrix
-    N = unitary.shape[0]  
+    dim_of_unitary = unitary.shape[0]  
     
     
     # initialize a quantum circuit with system, ancilla, and classical registers
-    quantum_circuit, system_reg, ancilla_reg, classical_reg ,num_ancilla_qubit= initialize_quantum_circuit(state,N, m)
+    quantum_circuit, system_reg, ancilla_reg, classical_reg ,num_ancilla_qubit= initialize_quantum_circuit(initial_state,dim_of_unitary, measurement_implemented_time)
 
 
     # Make unitary into quantum gate
@@ -110,22 +110,22 @@ def construct_blended_circuit(state, unitary, m):
     quantum_circuit = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
    
 
-    # Add the unitary operation and measurement m times
-    for i in range(m):
+    # Add the unitary operation and measurement measurement_implemented_time times
+    for i in range(measurement_implemented_time):
         quantum_circuit.reset(ancilla_reg)  # Reset ancilla qubits
         quantum_circuit.append(unitary_quantum_gate, range(system_reg.size + ancilla_reg.size))  # Apply unitary
         quantum_circuit.measure(ancilla_reg, classical_reg[i * num_ancilla_qubit:(i + 1) * num_ancilla_qubit])  # Measure ancilla
 
     return quantum_circuit
 
-def blended_circuit(blended_set, state, implete_times):
+def blended_circuit(blended_set, initial_state, measurement_implemented_time):
     """
     Create a blended measurement circuit for a given POVM set.
 
     Parameters:
     - blended_set: List of POVM elements.
-    - state: Initial quantum state.
-    - implete_times: Number of repetitions for the measurement process.
+    - initial_state: Initial quantum state.
+    - measurement_implemented_time: Number of repetitions for the measurement process.
 
     Returns:
     - QuantumCircuit: The blended measurement quantum circuit.
@@ -134,28 +134,28 @@ def blended_circuit(blended_set, state, implete_times):
     unitary_of_blended_set = compute_full_rank_unitary(blended_set)
     
     # Construct the quantum circuit using the unitary matrix
-    return construct_blended_circuit(state, unitary_of_blended_set, implete_times)
+    return construct_blended_circuit(initial_state, unitary_of_blended_set, measurement_implemented_time)
 
 
-def construct_interweave_blended_circuit(state, unitary, inverse_unitary, m):
+def construct_interweave_blended_circuit(initial_state, unitary, inverse_unitary, measurement_implemented_time):
     """
     Construct a quantum circuit for the interweave blended measurement procedure.
 
     Parameters:
-    - state: Initial quantum state (array or list).
+    - initial_state: Initial quantum initial_state (array or list).
     - unitary: Unitary matrix for the normal operation.
     - inverse_unitary: Unitary matrix for the inverse operation.
-    - m: Number of repetitions of the measurement process.
+    - measurement_implemented_time: Number of repetitions of the measurement process.
 
     Returns:
     - QuantumCircuit: The constructed interweave blended quantum circuit.
     """
     
     # Dimension of the unitary matrix
-    N = unitary.shape[0]  
+    dim_of_unitary = unitary.shape[0]  
     
     # Initialize a quantum circuit with system, ancilla, and classical registers
-    quantum_circuit, system_reg, ancilla_reg, classical_reg ,  num_ancilla_qubit= initialize_quantum_circuit(state,N, m)
+    quantum_circuit, system_reg, ancilla_reg, classical_reg ,  num_ancilla_qubit= initialize_quantum_circuit(initial_state,dim_of_unitary, measurement_implemented_time)
     
     # Make unitary into quantum gates
     unitary_quantum_gate = UnitaryGate(unitary, label='unitary')
@@ -163,7 +163,7 @@ def construct_interweave_blended_circuit(state, unitary, inverse_unitary, m):
    
 
     # Interweave normal and inverse operations and measure ancilla
-    for i in range(m):
+    for i in range(measurement_implemented_time):
         quantum_circuit.reset(ancilla_reg)  # Reset ancilla qubits
         # Apply inverse_unitary for even iterations, unitary for odd iterations
         quantum_circuit.append(inverse_unitary_quantum_gate if i % 2 == 0 else unitary_quantum_gate, range(system_reg.size + ancilla_reg.size))
@@ -171,15 +171,15 @@ def construct_interweave_blended_circuit(state, unitary, inverse_unitary, m):
 
     return quantum_circuit
 
-def interweave_blended_circuit(blended_set, inverse_blended_set, state, implete_times):
+def interweave_blended_circuit(blended_set, inverse_blended_set, initial_state, measurement_implemented_time):
     """
     Create a circuit for the interweave blended measurement procedure.
 
     Parameters:
     - blended_set: List of POVM elements for the forward operation.
     - inverse_blended_set: List of POVM elements.
-    - state: Initial quantum state.
-    - implete_times: Number of repetitions for the measurement process.
+    - initial_state: Initial quantum initial_state.
+    - measurement_implemented_time: Number of repetitions for the measurement process.
 
     Returns:
     - QuantumCircuit: The interwoven blended quantum circuit.
@@ -189,17 +189,17 @@ def interweave_blended_circuit(blended_set, inverse_blended_set, state, implete_
     unitary_of_blended_set = compute_full_rank_unitary(blended_set)
     
     # Construct the interweave blended circuit
-    return construct_interweave_blended_circuit(state, unitary_of_blended_set, unitary_of_inverse_blended_set, implete_times)
+    return construct_interweave_blended_circuit(initial_state, unitary_of_blended_set, unitary_of_inverse_blended_set, measurement_implemented_time)
 
 
-def three_outcome_blended_circuit(blended_set, state, implete_times):
+def three_outcome_blended_circuit(blended_set, initial_state, measurement_implemented_time):
     """
     Create a circuit for the three-outcome blended measurement procedure.
 
     Parameters:
     - blended_set: List of POVM elements.
-    - state: Initial quantum state.
-    - implete_times: Number of repetitions for the measurement process.
+    - initial_state: Initial quantum initial_state.
+    - measurement_implemented_time: Number of repetitions for the measurement process.
 
     Returns:
     - QuantumCircuit: The constructed three-outcome blended quantum circuit.
@@ -208,35 +208,35 @@ def three_outcome_blended_circuit(blended_set, state, implete_times):
     unitary_of_three_outcome_bleneded_set = [compute_full_rank_unitary(item) for item in blended_set]
     
     # Construct the quantum circuit for the three-outcome blended measurement
-    return construct_three_outcome_blended_circuit(state, unitary_of_three_outcome_bleneded_set, implete_times)
+    return construct_three_outcome_blended_circuit(initial_state, unitary_of_three_outcome_bleneded_set, measurement_implemented_time)
 
 
-def construct_three_outcome_blended_circuit(state, unitary, m):
+def construct_three_outcome_blended_circuit(initial_state, unitary, measurement_implemented_time):
     """
     Construct the three-outcome blended measurement quantum circuit.
 
     Parameters:
-    - state: Initial quantum state.
+    - initial_state: Initial quantum initial_state.
     - unitary: List of unitary matrices corresponding to the three-outcome measurement.
-    - m: Number of repetitions for the measurement process.
+    - measurement_implemented_time: Number of repetitions for the measurement process.
 
     Returns:
     - QuantumCircuit: The constructed quantum circuit.
     """
 
     # Dimension of the unitary matrix
-    N = unitary[0].shape[0]  
+    dim_of_unitary = unitary[0].shape[0]  
 
     
     # initialize a quantum circuit with system, ancilla, and classical registers
-    quantum_circuit, system_reg, ancilla_reg, classical_reg ,num_ancilla_qubit= initialize_quantum_circuit(state,N, m)
+    quantum_circuit, system_reg, ancilla_reg, classical_reg ,num_ancilla_qubit= initialize_quantum_circuit(initial_state,dim_of_unitary, measurement_implemented_time)
    
 
     # Make unitary into quantum gates
     unitary_quantum_gate = [UnitaryGate(u, label='unitary') for u in unitary]
 
     # Add unitary operations and measurements for each repetition
-    for i in range(m):
+    for i in range(measurement_implemented_time):
         quantum_circuit.reset(ancilla_reg)  # Reset ancilla qubits
         quantum_circuit.append(unitary_quantum_gate[i], range(system_reg.size + ancilla_reg.size))  # Apply unitary
         quantum_circuit.measure(ancilla_reg, classical_reg[i * num_ancilla_qubit:(i + 1) * num_ancilla_qubit])  # Measure ancilla
@@ -246,43 +246,43 @@ def construct_three_outcome_blended_circuit(state, unitary, m):
 
 
 
-def random_sequences_circuit(povm, state, m, pro_h):
+def random_sequences_circuit(povm, initial_state, measurement_implemented_time, pro_h):
     """
     Construct a quantum circuit for the random sequences measurement procedure.
 
     Parameters:
     - povm: List of POVM elements.
-    - state: Initial quantum state.
-    - m: Number of measurements.
+    - initial_state: Initial quantum initial_state.
+    - measurement_implemented_time: Number of measurements.
     - pro_h: Probability threshold for selecting high-probability POVM elements.
 
     Returns:
     - QuantumCircuit: The constructed quantum circuit.
-    - indices: Shuffled indices of the POVM elements.
+    - measurements_shuffled_indices: Shuffled measurements_shuffled_indices of the POVM elements.
     """
 
     
     # Determine the number of qubits for the system
-    dim_system = state.shape[1]
+    dim_system = initial_state.shape[1]
     num_system_qubit = int(np.ceil(np.log2(dim_system)))  # System qubits
 
     # Initialize quantum and classical registers
     system_reg = QuantumRegister(num_system_qubit, name='system')
     num_ancilla_qubit = 1  # Single qubit for ancilla
     ancilla_reg = QuantumRegister(num_ancilla_qubit, name='ancilla')
-    classical_reg = ClassicalRegister(num_ancilla_qubit * m, name='measure')
+    classical_reg = ClassicalRegister(num_ancilla_qubit * measurement_implemented_time, name='measure')
 
-    # Create quantum circuit and initialize the system state
+    # Create quantum circuit and initialize the system initial_state
     quantum_circuit = QuantumCircuit(system_reg, ancilla_reg, classical_reg, name='circuit')
-    quantum_circuit.initialize(state[0], system_reg)
+    quantum_circuit.initialize(initial_state[0], system_reg)
 
-    # Compute the density matrix of the state
-    roh = np.outer(state, state.conj().T)
+    # Compute the density matrix of the initial_state
+    roh = np.outer(initial_state, initial_state.conj().T)
 
-    # Shuffle POVM indices for randomness
-    indices = np.arange(len(povm))
-    np.random.shuffle(indices)
-    povm = povm[indices]  # Shuffle POVM elements
+    # Shuffle POVM measurements_shuffled_indices for randomness
+    measurements_shuffled_indices = np.arange(len(povm))
+    np.random.shuffle(measurements_shuffled_indices)
+    povm = povm[measurements_shuffled_indices]  # Shuffle POVM elements
 
     # Track POVM elements with probabilities exceeding the threshold
     highest_pro_povm = []
@@ -307,8 +307,8 @@ def random_sequences_circuit(povm, state, m, pro_h):
         # Measure ancilla qubits
         quantum_circuit.measure(ancilla_reg, classical_reg[p * num_ancilla_qubit:(p + 1) * num_ancilla_qubit])
     
-    # Also return the indices of the highest probability POVM elements for further count the accepting probability in tool.py
-    return quantum_circuit, indices
+    # Also return the measurements_shuffled_indices of the highest probability POVM elements for further count the accepting probability in tool.py
+    return quantum_circuit, measurements_shuffled_indices
 
 
 

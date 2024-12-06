@@ -13,10 +13,10 @@ def generate_random_statevector(d):
     statevector = vec / np.linalg.norm(vec)
     return statevector  
 
-def show_probability_povm(povm,roh_0,print_pro=False):
+def compute_probability_for_povm_set(povm,rho,print_pro=False):
     pro=[]  
     for item in povm:
-        pro.append(np.trace(item@roh_0))
+        pro.append(np.trace(item@rho))
     if print_pro:
         for item in pro:
             print(abs(item))
@@ -104,22 +104,22 @@ def xor_binary_strings(str1, str2):
     result = ''.join('1' if b1 != b2 else '0' for b1, b2 in zip(str1, str2))
 
     return result
-def resolve_random_result_case_special(count_set,m):
+def resolve_random_result_case_special(count_set,indices_set,m):
     
     accept_time=0
     check_array=[0 for i in range(m)]
     correct = [0 if i <m/2 else 1 for i in range(m)]
     vote=[0 for _ in range(int(m))]
-    for item in count_set:
+    for count,indice in zip(count_set,indices_set):
     
-        keys=list(item[0].keys())
+        keys=list(count.keys())
         keys=keys[0][::-1]
         # ans = ''.join('0' if i in item[1] else '1' for i in range(len(keys[0])))
-        print("ans: "+str(item[1]))
+        print("ans: "+str(indice))
         print(keys)
         for i in range(len(keys)):
             if keys[i]=='0':
-                vote[item[1][i]]+=1
+                vote[indice[i]]+=1
     print(f'vote: {vote}')
     for item in top_half_indices(vote):
         check_array[item]=1
@@ -128,7 +128,31 @@ def resolve_random_result_case_special(count_set,m):
     xor_result = [a ^ b for a, b in zip(check_array, correct)]
     accept_time=xor_result.count(0)
     return(accept_time) 
-   
+
+# def resolve_random_result_case_special(count_set,m):
+    
+#     accept_time=0
+#     check_array=[0 for i in range(m)]
+#     correct = [0 if i <m/2 else 1 for i in range(m)]
+#     vote=[0 for _ in range(int(m))]
+#     for item in count_set:
+    
+#         keys=list(item[0].keys())
+#         keys=keys[0][::-1]
+#         # ans = ''.join('0' if i in item[1] else '1' for i in range(len(keys[0])))
+#         print("ans: "+str(item[1]))
+#         print(keys)
+#         for i in range(len(keys)):
+#             if keys[i]=='0':
+#                 vote[item[1][i]]+=1
+#     print(f'vote: {vote}')
+#     for item in top_half_indices(vote):
+#         check_array[item]=1
+#     print(check_array)
+#     print()
+#     xor_result = [a ^ b for a, b in zip(check_array, correct)]
+#     accept_time=xor_result.count(0)
+#     return(accept_time) 
        
 def resolve_blended_result_case_special(counts_set,m,gate_num_times):
     accept_time=0

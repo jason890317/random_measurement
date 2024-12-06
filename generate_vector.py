@@ -1,48 +1,39 @@
 import numpy as np
 
-def generate_first_vector(d,p,rank):
+def generate_first_vector(d, p, rank):
     """
-    Generate a vector of the form [a1, a2, ..., an, b1, b2, ..., bn] such that
-    sum(|ai|^2) = A and sum(|bi|^2) = B without the constraint of positive real parts.
+    Generate a complex vector that satisfies specific normalization conditions.
     
     Parameters:
-    - n: Number of elements in a_i and b_i
-    - A: Sum of squares of the magnitudes of a_i
-    - B: Sum of squares of the magnitudes of b_i
+    - d (int): Total dimension of the Hilbert space.
+    - p (float): Fraction of the vector's magnitude allocated to the 'b' components.
+    - rank (int): Number of elements in the 'b' component.
     
     Returns:
-    - vector: A numpy array containing the vector [a1, a2, ..., an, b1, b2, ..., bn]
+    - vector (np.ndarray): A complex vector satisfying the given constraints.
     """
-    
-    n=d-rank####!!!!!!!!!!!!
-    m=rank
-    
-    # n=int(d/2)
-    # m=int(d/2)
-    # Generate random complex numbers with positive real parts for ai and bi
-    real_a = np.random.rand(n)
-    imag_a = np.random.randn(n)
-    a = real_a + 1j * imag_a
-    
-    real_b = np.random.rand(m)
-    imag_b = np.random.randn(m)
-    b = real_b + 1j * imag_b
-    
-    # Normalize the vectors to satisfy the conditions
-    norm_a = np.sqrt((1-p) / np.sum(np.abs(a)**2))
-    norm_b = np.sqrt((p) / np.sum(np.abs(b)**2))
-    
-    a = norm_a * a
-    b = norm_b * b
-    
-    # Ensure that all real parts of a and b are positive
+    # Divide dimensions into two parts: 'a' and 'b'
+    n = d - rank  # Number of elements in 'a'
+    m = rank      # Number of elements in 'b'
+
+    # Generate random complex numbers for 'a' and 'b'
+    real_a, imag_a = np.random.rand(n), np.random.randn(n)  # Real and imaginary parts for 'a'
+    a = real_a + 1j * imag_a  # Complex vector 'a'
+
+    real_b, imag_b = np.random.rand(m), np.random.randn(m)  # Real and imaginary parts for 'b'
+    b = real_b + 1j * imag_b  # Complex vector 'b'
+
+    # Normalize 'a' and 'b' to satisfy the magnitude constraints
+    norm_a = np.sqrt((1 - p) / np.sum(np.abs(a)**2))  # Scale factor for 'a'
+    norm_b = np.sqrt(p / np.sum(np.abs(b)**2))       # Scale factor for 'b'
+    a = norm_a * a  # Normalize 'a'
+    b = norm_b * b  # Normalize 'b'
+
+    # Ensure real parts of all elements are positive
     a = np.abs(a.real) + 1j * a.imag
     b = np.abs(b.real) + 1j * b.imag
-    
-    # Construct the final vector
-    ###########################################################
-    vector = np.concatenate([a, b])
-    
-    ###########################################################
-    return vector
 
+    # Combine 'a' and 'b' into a single vector
+    vector = np.concatenate([a, b])
+
+    return vector

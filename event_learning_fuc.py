@@ -1,6 +1,6 @@
 import numpy as np
 from tools import (
-    show_probability_povm, resolve_blended_result_case_1, resolve_blended_result_case_2,
+    compute_probability_for_povm_set, resolve_blended_result_case_1, resolve_blended_result_case_2,
     resolve_random_result_case_special, resolve_random_result_case_1, resolve_blended_result_case_special,
     resolve_blended_result_case_interweave, generate_permutations, resolve_blended_three_result,
     resolve_random_result_case_2
@@ -13,206 +13,112 @@ from circuit import (
     interweave_blended_circuit, three_outcome_blended_circuit
 )
 
-def event_learning(copies,d,m,gate_num_times,povm_set,roh_0,case,state,test_time,case_1_high,method):
+def run_experiment(circuit_func, counts_set,copies, *args):
     
-  
-    if method=='special_random':
-        # povm_set=generate_povm_epson_case_special(d,m,rank,pro_case_1_h,pro_case_1_l,roh_0)
-        count_set=[]
-        accept_time=0
-        for i in range(copies):
-            qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
-            # print(high)
-            counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
-            
-            count_set.append([counts,high])
-        # print(counts)
-        accept_time=resolve_random_result_case_special(count_set,m)
-        
-        experiment=accept_time/m
-    if method=='special_blended' or method=="optimizing_blended":
-        # povm_set=generate_povm_epson_case_special(d,m,rank,pro_case_1_h,pro_case_1_l,roh_0)
-        
-        # povm_set_pro=show_probability_povm(povm_set,roh_0,True)
-        accept_time=0
-        
-        if method=="optimizing_blended":
-            blended_set=optimizing_blended_measurement(povm_set,d,m)
-        elif method=="special_blended":
-            blended_set=blended_measurement(povm_set,d,m)
-        
-        # blended_set=[ item@item.T.conj() for item in blended_set]
-        # povm_set_pro=show_probability_povm(blended_set,roh_0,False)
-        
-        counts_set=[]
-        
-        for _ in range(copies):    
-            qc=blended_circuit(blended_set,state,int(gate_num_times*m))
-            
-            # print(high)
-            counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
-            counts_set.append(counts)
-            
-        accept_time=resolve_blended_result_case_special(counts_set,m,gate_num_times)
-        
-        # accept_time=resolve_random_result_case_special(counts,high)
-        
-        experiment=accept_time/m
+    for _ in range(copies):
+        quantum_circuit = circuit_func(*args)
+        count = run_circuit(quantum_circuit, num_shot=1, backend='qasm_simulator')
+        counts_set.append(count)
+    return counts_set
+
+
+def quantum_event_identification(copies, d, m, gate_num_times, povm_set, rho, case, state, test_time, case_1_high, method):
     
-    if method=="interweave":
-        # povm_set=generate_povm_epson_case_special(d,m,rank,pro_case_1_h,pro_case_1_l,roh_0)
+    # Initialize the count of accept times and the array for storing the eperiment results, count.
+    accept_time = 0
+    counts_set = []
+    
+    if method == 'special_random':
+        shuffled_indices_set = []
         
-        # povm_set_pro=show_probability_povm(povm_set,roh_0,True)
-        accept_time=0
-        # povm_set_pro=show_probability_povm(povm_set,roh_0,True)
-        blended_set=blended_measurement(povm_set,d,m)
-        # blended_set=[ item@item.T.conj() for item in blended_set]
-        blended_set_inv=inverse_blended_measurement(povm_set,d,m)
-        # blended_set_inv=[ item@item.T.conj() for item in blended_set_inv]
-        
-        # povm_set_pro=show_probability_povm(blended_set,roh_0,False)
-        counts_set=[]
         for _ in range(copies):
-            qc=interweave_blended_circuit(blended_set,blended_set_inv,state,int(gate_num_times*m))
-            # print(high)
-            counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
-            #print(counts)
-            counts_set.append(counts)
-            
-        accept_time=resolve_blended_result_case_interweave(counts_set,m,gate_num_times)
-         
-        experiment=accept_time/m   
+            quantum_circuit, shuffled_indices = random_sequences_circuit(povm_set, state, m, case_1_high)
+            count = run_circuit(quantum_circuit, num_shot=1, backend='qasm_simulator')
+            counts_set.append(count)
+            shuffled_indices_set.append(shuffled_indices)
+        accept_time = resolve_random_result_case_special(counts_set, shuffled_indices_set, m)
+
+    elif method in ['special_blended', 'optimizing_blended']:
+        if method == "optimizing_blended":
+            blended_set = optimizing_blended_measurement(povm_set, d, m)
+        else:
+            blended_set = blended_measurement(povm_set, d, m)
+        counts_set=run_experiment(blended_circuit,counts_set,copies, blended_set, state, int(gate_num_times * m))
+        accept_time = resolve_blended_result_case_special(counts_set, m, gate_num_times)
+
+    elif method == "interweave":
+        blended_set = blended_measurement(povm_set, d, m)
+        blended_set_inv = inverse_blended_measurement(povm_set, d, m)
+        counts_set=run_experiment(interweave_blended_circuit, counts_set,copies, blended_set, blended_set_inv, state, int(gate_num_times * m))
+        accept_time = resolve_blended_result_case_interweave(counts_set, m, gate_num_times)
+
+    elif method == "blended_three":
+        permutation = generate_permutations(m, int(5 * m))
+        three_outcome_blended_set = three_outcome_blended_measurement(povm_set, d, m, permutation)
+        counts_set=run_experiment(three_outcome_blended_circuit, counts_set,copies,three_outcome_blended_set, state, int(5 * m))
+        accept_time = resolve_blended_three_result(counts_set, m, permutation, int(5 * m))
+
+    experiment = accept_time / m
     
-    #######################################################################################################################
+    result = {"theorem": 0, "experiment": experiment}
     
-    if method == "blended_three":
+    return result
+    
+
+    
+def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, state, test_time, case_1_high, method):
+    
+    accept_time = 0
+    counts_set = []
+    
+    povm_set_probability = compute_probability_for_povm_set(povm_set, rho, False)
+    povm_set_probability = sorted(povm_set_probability, reverse=True)
+
+    if method == 'random':
+        if case == 1:
+            epsilon = 1 - povm_set_probability[0]
+            beta = sum(povm_set_probability[1:])
+            at_least_pro = ((1 - epsilon) ** 7) / (1296 * ((1 + beta) ** 7))
+        elif case == 2:
+            delta = 2 * sum(povm_set_probability)
+
+        for _ in range(test_time):
+            quantum_circuit, shuffled_indices = random_sequences_circuit(povm_set, state, m, case_1_high)
+            count = run_circuit(quantum_circuit, num_shot=1, backend='qasm_simulator')
+            if (case == 1 and resolve_random_result_case_1(count, shuffled_indices)) or \
+               (case == 2 and resolve_random_result_case_2(count)):
+                accept_time += 1
+        experiment = accept_time / test_time
+
+    elif method == 'blended':
+        if case == 1:
+            epsilon = 1 - povm_set_probability[0]
+            beta = sum(povm_set_probability[1:])
+            at_least_pro = ((1 - epsilon) ** 3) / (12 * (1 + beta))
+        elif case == 2:
+            delta = sum(povm_set_probability)
+
+        blended_set = blended_measurement(povm_set, d, m)
+        quantum_circuit = blended_circuit(blended_set, state, m)
         
-        
-        permutation=generate_permutations(m,int(5*m))
-        three_outcome_blended_set=three_outcome_blended_measurement(povm_set,d,m,permutation)
-        # for item in three_outcome_blended_set:
-        #     show_probability_povm(item,roh_0,True)
-        #     print()
-        counts_set=[]
-        for _ in range(copies):
-            qc=three_outcome_blended_circuit(three_outcome_blended_set,state,int(5*m))
-            counts=run_circuit(qc,1)
-            counts_set.append(counts)
-            # print(counts)
-        accept_time=resolve_blended_three_result(counts_set,m,permutation,int(5*m))
-        experiment=accept_time/m
-        
-    
-    
-    ################### cauculate the probability of elements in povm set #################################################
+        for _ in range(int(test_time / 50)):
+            count = run_circuit(quantum_circuit, 50)
+            counts_set.extend(count.items())
+
+        count_set_dict = {}
+        for key, count in counts_set:
+            count_set_dict[key] = count_set_dict.get(key, 0) + count
+
+        if case == 1:
+            accept_time = resolve_blended_result_case_1(count_set_dict, m)
+        elif case == 2:
+            accept_time = resolve_blended_result_case_2(count_set_dict, m)
+        experiment = accept_time / test_time
+
+    if case == 1 and method in ["blended", "random"]:
+        result = {"theorem": at_least_pro.real, "experiment": experiment}
+    elif case == 2 and method in ["blended", "random"]:
+        result = {"theorem": delta.real, "experiment": experiment}
    
-    povm_set_pro=show_probability_povm(povm_set,roh_0,False)
-    povm_set_pro=sorted(povm_set_pro,reverse=True)
     
-    ##################### cauculate the coefficients #################################
-    
-    if method=='random':
-        
-        #############################################################################
-        if case==1:
-            
-            epsilon=1-povm_set_pro[0]
-            
-            beta=sum(povm_set_pro[1:])
-            
-            at_least_pro=((1-epsilon)**7)/(1296*((1+beta))**7)
-            
-        elif case==2:
-            
-            delta=2*sum(povm_set_pro[:])
-        
-        
-        ##############################################################################
-        
-        accept_time=0
-        # print(povm_set)
-        if case==1:
-            for i in range(test_time):
-                
-                qc,high=random_sequences_circuit(povm_set,state,m,case_1_high)
-                counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
-                check=resolve_random_result_case_1(counts,high)
-                if check:
-                    accept_time+=1
-            experiment=accept_time/test_time
-        
-        elif case==2:
-            for i in range(test_time):
-                qc,_=random_sequences_circuit(povm_set,state,m,case_1_high)
-                counts=run_circuit(qc,num_shot=1,backend='qasm_simulator')
-                check=resolve_random_result_case_2(counts)
-                if check:
-                    accept_time+=1
-            experiment=accept_time/test_time
-    if method=='blended':
-        
-        ##############################################################################
-        if case==1:
-            
-            epsilon=1-povm_set_pro[0]
-            
-            beta=sum(povm_set_pro[1:])
-            
-            at_least_pro=((1-epsilon)**3)/(12*(1+beta))
-            
-        elif case==2:
-            
-            delta=sum(povm_set_pro[:])
-        
-        #############################################################################
-        
-        
-        blended_set=blended_measurement(povm_set,d,m)
-   
-        
-        #############################################################################
-        
-        counts_set=[]
-        
-        qc=blended_circuit(blended_set,state,m)
-        # print(povm_set)
-        for i in range(int(test_time/50)):
-            # print(f'\r{i}', end='', flush=True)
-            counts=run_circuit(qc,50)
-            for item in counts.items():
-                counts_set.append(item)
-        count_set_dict={}
-        for item in counts_set:
-            key = item[0]  # The outcome or measurement key
-            count = item[1]  # The count of this particular outcome
-
-            # Accumulate the counts in the dictionary
-            if key in count_set_dict:
-                count_set_dict[key] += count
-            else:
-                count_set_dict[key] = count
-
-        ##############################################################################
-        
-        accept_time=0
-        
-        if case == 2:
-        
-            accept_time=resolve_blended_result_case_2(count_set_dict,m)
-            experiment=accept_time/test_time
-            
-        elif case == 1:
-            
-            accept_time=resolve_blended_result_case_1(count_set_dict,m)
-            experiment=accept_time/test_time
-
-    ################ Return the result ################################################################
-    
-    if case==1 and (method=="blended" or method=="random"):
-        result={"theorem":at_least_pro.real,"experiment":experiment}
-    elif case==2 and (method=="blended" or method=="random"):
-        result={"theorem":delta.real,"experiment":experiment}
-    elif method=='special_random' or method=='special_blended' or method=="interweave" or method=="blended_three" or method=="optimizing_blended":
-        result={"theorem":0,"experiment":experiment}
-        
     return result

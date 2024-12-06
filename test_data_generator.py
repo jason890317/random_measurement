@@ -68,7 +68,7 @@ def main():
         1
         
         ]
-    method_s = ["optimizing_blended","interweave", "special_blended", "blended_three", "classical_shadow","special_random", "blended", "random"] 
+    method_s = ["special_random","special_blended","optimizing_blended","interweave","blended_three","classical_shadow","blended","random"] 
     copies_s = [1,2]
     rank_s = {2:[1], 4:[2], 8:[4], 16:[8], 32:[16], 64:[32]}
     file_path ="./test_script/"+ sys.argv[1]
