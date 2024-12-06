@@ -107,7 +107,7 @@ def main():
     parser.add_argument("--dimension", type=int, nargs='+', help="Dimension of the system.")
     parser.add_argument("--m_s", type=int, nargs='+', help="List of measurements.")
     parser.add_argument("--gate_num_times", type=float, nargs='+', default=[1], help="List of gate number times.")
-    parser.add_argument("--method_s", type=str, nargs='+', help="List of methods.")
+    parser.add_argument("--method_s", type=str, nargs='+', default=["random"], help="List of methods.")
     parser.add_argument("--copies_s", type=int, nargs='+', default=[1], help="List of copies.")
     parser.add_argument("--rank_s", type=json.loads, default={"16": [8]}, help="Dictionary of ranks.")
     parser.add_argument("--file_path", type=str, help="Output file name (without extension).")
@@ -124,10 +124,8 @@ def main():
     args.dimension = prompt_for_input("Enter dimension (space-separated)", args.dimension, int)
     args.m_s = prompt_for_input("Enter measurements (space-separated)", args.m_s, lambda x: list(map(int, x.split())))
     args.gate_num_times = prompt_for_input("Enter gate number times (space-separated)", args.gate_num_times, lambda x: list(map(float, x.split())))
-    args.method_s = prompt_for_input("Enter methods (space-separated)", args.method_s, lambda x: x.split())
-    
     while True:
-        args.method_s = prompt_for_input("Enter methods (space-separated)", args.method_s, lambda x: x.split())
+        args.method_s = prompt_for_input("Enter methods (space-separated)", args.method_s, lambda x: list(x.split()))
         if all(method in total_methods for method in args.method_s):
             break
         else:
