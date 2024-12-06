@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import numpy as np
-from generate_povm import generate_povm_general
+from povm_generate_function import generate_povm_general
 from blended_measurement import blended_measurement
 from circuit import compute_full_rank_unitary
 
@@ -46,15 +46,18 @@ def generate_and_save_povm(file_path, generation_function, generation_args, aver
     """
     try:
         # Load existing POVM set if available
-        povm_set = np.load(file_path)
-        if len(povm_set) == average_time:
+        povm_set = np.load(file_path, allow_pickle=True)
+        povm_set = povm_set.tolist()
+        if len(povm_set) == average_time or len(povm_set) > average_time:
             print(f"POVM data already exists at {file_path}, no action taken.")
             return
     except FileNotFoundError:
         povm_set = []
-
+    
     while len(povm_set) < average_time:
+        
         povm = generation_function(*generation_args)
+        
         # Check if the generated POVM is valid
         if check_random_measurement(povm, generation_args) and check_blended_measurement(povm, generation_args):
             povm_set.append(povm)
@@ -67,6 +70,7 @@ def generate_and_save_povm(file_path, generation_function, generation_args, aver
     print(f"Generated and saved POVM data to {file_path}")
 
 if __name__ == "__main__":
+    
     # Load configuration from JSON file
     with open(f"./test_script/{sys.argv[1]}", 'r') as file:
         data = json.load(file)
@@ -80,27 +84,21 @@ if __name__ == "__main__":
 
     # Process each test configuration in the JSON data
     for test_data in data["test_data"]:
-        state = np.array([np.hstack((1, np.zeros(test_data["d"] - 1)))])  # Initialize quantum state
-        roh_0 = np.outer(state, state.T.conj())  # Compute density matrix
+        state = np.array([np.hstack((1, np.zeros(test_data["dimension"] - 1)))])  # Initialize quantum state
+        rho = np.outer(state, state.T.conj())  # Compute density matrix
 
         method = test_data["method"]
         case = test_data["case"]
-        d = test_data["d"]
+        d = test_data["dimension"]
         m = test_data["m"]
         rank = test_data["rank"]
 
         # Determine case string for file naming
-        case_str = f"case_{case}" if method in ["blended", "random"] else "special"
-        file_path = f'./Haar_measurement_dir/{case_str}_d_{d}_m_{m}_r_{rank}.npy'
+        file_path = f'./Haar_measurement_dir/case_{case}_d_{d}_m_{m}_r_{rank}.npy'  # File path for POVM set                                            
 
         # Set generation arguments based on case and method
-        generation_args = (
-            (1, d, m, rank, case_1_high, case_1_low, case_2_pro, roh_0)
-            if case == 1 else
-            (2, d, m, rank, case_1_high, case_1_low, case_2_pro, roh_0)
-        ) if method in ["blended", "random"] else (
-            3, d, m, rank, case_1_high, case_1_low, case_2_pro, roh_0
-        )
+        generation_args=(case,d,m,rank,case_1_high,case_1_low,case_2_pro,rho)
+        
 
         # Generate and save the POVM set
         generate_and_save_povm(file_path, generate_povm_general, generation_args, average_time)

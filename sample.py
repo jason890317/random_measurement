@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import unitary_group
 import sys
 from scipy.stats import unitary_group
-from generate_vector import generate_first_vector
+from vector_generating_function import generate_first_vector
 
 ############################################## generate povm by rotating projector #####################################
 def sample_povm_general(case, d, m, rank, case_1_h, case_1_l, case_2_l, roh, batch_size=1000, n_jobs=-1,perturbation=1e-3):

@@ -82,6 +82,7 @@ def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, sta
     povm_set_probability = sorted(povm_set_probability, reverse=True)
 
     if method == 'random':
+        
         # Compute theoretical bounds for 'random' method
         epsilon = 1 - povm_set_probability[0]
         beta = sum(povm_set_probability[1:])
@@ -90,15 +91,19 @@ def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, sta
 
         # Simulate the 'random' method
         for _ in range(test_time):
+            
             counts_set, shuffled_indices_set = start_simulation(
                 random_sequences_circuit, copies, povm_set, state, m, case_1_high, include_indices=True
             )
-            if case == 1 and resolve_random_result_case_1(counts_set, shuffled_indices_set):
+            
+            # check the acceptance of the result
+            if case == "1" and resolve_random_result_case_1(counts_set, shuffled_indices_set):
                 accept_time += 1
-            elif case == 2 and resolve_random_result_case_2(counts_set):
+            elif case == "2" and resolve_random_result_case_2(counts_set):
                 accept_time += 1
 
     elif method == 'blended':
+        
         # Compute theoretical bounds for 'blended' method
         epsilon = 1 - povm_set_probability[0]
         beta = sum(povm_set_probability[1:])
@@ -109,15 +114,19 @@ def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, sta
         blended_set = blended_measurement(povm_set, d, m)
         for _ in range(test_time):
             counts_set = start_simulation(blended_circuit, 1, blended_set, state, m)
-            if case == 1 and resolve_blended_result_case_1(counts_set, m):
+            
+            # check the acceptance of the result 
+            if case == "1" and resolve_blended_result_case_1(counts_set, m):
                 accept_time += 1
-            elif case == 2 and resolve_blended_result_case_2(counts_set, m):
+            elif case == "2" and resolve_blended_result_case_2(counts_set, m):
                 accept_time += 1
-
-    experiment = accept_time / test_time  # Calculate experimental probability
-    if case == 1:
+    
+    # Calculate experimental probability
+    experiment = accept_time / test_time  
+    
+    if case == "1":
         return {"theorem": at_least_pro.real, "experiment": experiment}
-    elif case == 2:
+    elif case == "2":
         return {"theorem": delta.real, "experiment": experiment}
 
 
@@ -129,11 +138,11 @@ def start_simulation(circuit_func, copies, *args, include_indices=False):
     - circuit_func: Function to generate quantum circuits.
     - copies: Number of repetitions.
     - args: Additional arguments for the circuit function.
-    - include_indices: If True, collect additional indices.
+    - include_indices: If True, collect additional indices (only for "random" and "special random" circuit).
 
     Returns:
     - counts_set: List of counts from simulations.
-    - indices_set (optional): List of additional indices if include_indices is True.
+    - indices_set (optional): List of additional indices for randomly shuffled measurements, if include_indices is True.
     """
     indices_set = [] if include_indices else None
     counts_set = []
