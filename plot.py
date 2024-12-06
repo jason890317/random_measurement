@@ -41,77 +41,77 @@ if __name__=="__main__":
     
     
     ################################## rank plot ###########################################################
-    filtered_df = pd_data[(pd_data["gate_num_time"]==1) & (pd_data["copies"]==20) ]
-    grouped = filtered_df.groupby(['d', 'm', 'method', 'gate_num_time','copies'])
+    # filtered_df = pd_data[(pd_data["gate_num_time"]==1) & (pd_data["copies"]==20) ]
+    # grouped = filtered_df.groupby(['d', 'm', 'method', 'gate_num_time','copies'])
     
     
-    for name,group in grouped:
-        # print("Group:", group)
-        # print()
-        exp=[]
-        # thm=[]
-        rank_s=[]
-        for item in group.values:
-            # print(item)
-            exp.append(np.mean(item[7]["experiment"]))
-            # thm.append(item[7]["theorem"])
-            rank_s.append(item[2])
+    # for name,group in grouped:
+    #     # print("Group:", group)
+    #     # print()
+    #     exp=[]
+    #     # thm=[]
+    #     rank_s=[]
+    #     for item in group.values:
+    #         # print(item)
+    #         exp.append(np.mean(item[7]["experiment"]))
+    #         # thm.append(item[7]["theorem"])
+    #         rank_s.append(item[2])
       
-        fig,ax=plt.subplots()
-        plt.xticks(range(len(rank_s)),labels=rank_s)
-        plt.yticks(np.arange(0, 1.2, 0.05))
-        plt.ylim(0, 1)
-        ax.plot(range(len(rank_s)),exp,color='orange',label="experiment result")
-        ax.plot(range(len(rank_s)),[0.5]*len(exp),label="50%")
-        # ax.plot(range(len(rank_s)),thm,color='blue',label="theorem result")
-        ax.set_title("d_"+str(name[0])+",cof_"+str(name[3])+",m_"+str(name[1])+"_with "+str(name[4])+" copies")
-        ax.set_xlabel("the ranks")
-        ax.set_ylabel("Success Probability")
-        ax.legend()
+    #     fig,ax=plt.subplots()
+    #     plt.xticks(range(len(rank_s)),labels=rank_s)
+    #     plt.yticks(np.arange(0, 1.2, 0.05))
+    #     plt.ylim(0, 1)
+    #     ax.plot(range(len(rank_s)),exp,color='orange',label="experiment result")
+    #     ax.plot(range(len(rank_s)),[0.5]*len(exp),label="50%")
+    #     # ax.plot(range(len(rank_s)),thm,color='blue',label="theorem result")
+    #     ax.set_title("d_"+str(name[0])+",cof_"+str(name[3])+",m_"+str(name[1])+"_with "+str(name[4])+" copies")
+    #     ax.set_xlabel("the ranks")
+    #     ax.set_ylabel("Success Probability")
+    #     ax.legend()
         
-        plt.savefig(save_dir+"/"+name[2]+"/d_"+str(name[0])+"gate_number_cof"+str(name[3])+",m_"+str(name[1])+",copy_"+str(name[4])+".png")
+    #     plt.savefig(save_dir+"/"+name[2]+"/d_"+str(name[0])+"gate_number_cof"+str(name[3])+",m_"+str(name[1])+",copy_"+str(name[4])+".png")
     
-    grouped = filtered_df.groupby(['d',  'method', 'gate_num_time','copies'])
+    # grouped = filtered_df.groupby(['d',  'method', 'gate_num_time','copies'])
     
     
-    for name,group in grouped:
+    # for name,group in grouped:
         
-        sub_grouped = group.groupby(['d', 'm', 'method', 'gate_num_time','copies'])
-        exp_data_s=[]
-        thm_data_s=[]
-        m_s=[]
-        for sub_name,sub_group in sub_grouped:
+    #     sub_grouped = group.groupby(['d', 'm', 'method', 'gate_num_time','copies'])
+    #     exp_data_s=[]
+    #     thm_data_s=[]
+    #     m_s=[]
+    #     for sub_name,sub_group in sub_grouped:
             
-            exp=[]
-            # thm=[]
-            rank_s=[]
-            m_s.append(sub_name[1])
-            for item in sub_group.values:
+    #         exp=[]
+    #         # thm=[]
+    #         rank_s=[]
+    #         m_s.append(sub_name[1])
+    #         for item in sub_group.values:
                 
-                exp.append(np.mean(item[7]["experiment"]))
+    #             exp.append(np.mean(item[7]["experiment"]))
                 
-                rank_s.append(item[2])
+    #             rank_s.append(item[2])
                 
                     
-            exp_data_s.append(exp)
-            # thm_data_s.append(thm)
+    #         exp_data_s.append(exp)
+    #         # thm_data_s.append(thm)
         
     
-    fig,ax=plt.subplots()
-    plt.xticks(range(len(rank_s)),labels=rank_s)
-    plt.yticks(np.arange(0, 1.2, 0.05))
-    plt.ylim(0, 1)
-    for exp_data,m in zip(exp_data_s,m_s):
-        ax.plot(range(len(rank_s)),exp_data,label="m_"+str(m))
+    # fig,ax=plt.subplots()
+    # plt.xticks(range(len(rank_s)),labels=rank_s)
+    # plt.yticks(np.arange(0, 1.2, 0.05))
+    # plt.ylim(0, 1)
+    # for exp_data,m in zip(exp_data_s,m_s):
+    #     ax.plot(range(len(rank_s)),exp_data,label="m_"+str(m))
         
-        # ax.plot(range(len(rank_s)),thm_data,label=+"_thm")
-    ax.plot(range(len(rank_s)),[0.5]*len(exp),label="50%")
-    ax.set_title("The comparison in different ranks with "+str(sub_name[4])+" copies")
-    ax.set_xlabel("the ranks")
-    ax.set_ylabel("Success Probability")
-    ax.legend()
+    #     # ax.plot(range(len(rank_s)),thm_data,label=+"_thm")
+    # ax.plot(range(len(rank_s)),[0.5]*len(exp),label="50%")
+    # ax.set_title("The comparison in different ranks with "+str(sub_name[4])+" copies")
+    # ax.set_xlabel("the ranks")
+    # ax.set_ylabel("Success Probability")
+    # ax.legend()
     
-    plt.savefig(save_dir+"/"+sub_name[2]+"/d_"+str(sub_name[0])+"gate_number_cof"+str(sub_name[3])+",copy_"+str(sub_name[4])+".png")
+    # plt.savefig(save_dir+"/"+sub_name[2]+"/d_"+str(sub_name[0])+"gate_number_cof"+str(sub_name[3])+",copy_"+str(sub_name[4])+".png")
     
     ################################ m plot ##############################################################
     # Define the inverse power law model with an asymptote at y = 0.5: y = 0.5 + b * x^(-a)

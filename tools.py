@@ -27,65 +27,67 @@ def compute_probability_for_povm_set(povm,rho,print_pro=False):
 def resolve_blended_result_case_2(counts,m):
    
     n= int(np.log2(m))+1
-    accept_time=0
-    
-    for key,val in counts.items():
-        # print("origin: "+key)
-        raw_result=key
-        # print("after: "+raw_result)
-        result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-        result=[ int(item, 2) for item in result]
-        # print(result)
-        number_counts = Counter(result)
-        labels, values = zip(*number_counts.items())
-        
-        if len(labels)>1:
-            accept_time+=val
 
-    return accept_time
+    keys=list(counts[0].keys())[0]
+    
+    # print("origin: "+key)
+    raw_result=keys
+    # print("after: "+raw_result)
+    result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+    result=[ int(item, 2) for item in result]
+    result=result[::-1] 
+    # print(result)
+    number_counts = Counter(result)
+    labels, values = zip(*number_counts.items())
+    
+    if len(labels)>1:
+        return True
+
+    return False
 
 def resolve_blended_result_case_1(counts,m):
 
-    accept_time=0
     n= int(np.log2(m))+1
-    for key,val in counts.items():
-        # print("origin: "+key)
-        raw_result=key
-        # print("after: "+raw_result)
-        result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-        # print(result)
-        result=[ int(item, 2) for item in result]
-        # print(result)
-        result=result[::-1] 
-        # print(result)
-        for item in result:
-            if item != 0 and item == m:
-                accept_time+=val
-                break
-            elif item != 0 and item !=m:
-                break
-        
-    return accept_time
+    keys=list(counts[0].keys())[0]
+
+    # print("origin: "+key)
+    raw_result=keys
+    # print("after: "+raw_result)
+    result=[raw_result[n*i:(i+1)*n] for i in range(m)]
+    # print(result)
+    result=[ int(item, 2) for item in result]
+    # print(result)
+    result=result[::-1] 
+    # print(result)
+    for item in result:
+        if item != 0 and item == m:
+            # print("true")
+            return True
+        elif item != 0 and item !=m:
+            # print("false")
+            return False
+    return False
+    
 
 def resolve_random_result_case_1(counts,high):
     
     check=False
-    keys=list(counts.keys())
+    keys=list(counts[0].keys())
 
     keys[0]=keys[0][::-1]
     # print("result: "+keys[0])
     # print("high: "+str(high[0]))
     for i in range(len(keys[0])):
-        if keys[0][i]=='0' and i!=high[0]:
+        if keys[0][i]=='0' and i!=high[0][0]:
             # check=False
             break
-        elif keys[0][i]=='0' and i==high[0]:
+        elif keys[0][i]=='0' and i==high[0][0]:
             check=True            
    
     return check
 
 def resolve_random_result_case_2(counts):
-    keys=list(counts.keys())
+    keys=list(counts[0].keys())
     keys[0]=keys[0][::-1]
 
     for item in keys[0]:
