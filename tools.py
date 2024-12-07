@@ -5,108 +5,78 @@ import random
 import sys
 
 
-
-def generate_random_statevector(d):
-    # Generate a random complex vector
-    vec = np.random.rand(d) + 1j * np.random.rand(d)
-    # Normalize the vector
-    statevector = vec / np.linalg.norm(vec)
-    return statevector  
-
-def compute_probability_for_povm_set(povm,rho,print_pro=False):
-    pro=[]  
-    for item in povm:
-        pro.append(np.trace(item@rho))
+def compute_probability_for_povm_set(povm, rho, print_pro=False):
+    pro = [np.trace(item @ rho) for item in povm]
     if print_pro:
         for item in pro:
             print(abs(item))
-    print(np.mean(pro))
     return pro
         
-
-def resolve_blended_result_case_2(counts,m):
-   
-    n= int(np.log2(m))+1
-
-    keys=list(counts[0].keys())[0]
     
-    # print("origin: "+key)
-    raw_result=keys
-    # print("after: "+raw_result)
-    result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-    result=[ int(item, 2) for item in result]
-    result=result[::-1] 
-    # print(result)
+def check_outcome_condition_for_blended_case_2(counts, m):
+
+    n = int(np.log2(m)) + 1
+    keys = list(counts[0].keys())[0]
+    raw_result = keys
+
+    result = [int(raw_result[n * i:(i + 1) * n], 2) for i in range(m)]
+    result = result[::-1]
+
     number_counts = Counter(result)
-    labels, values = zip(*number_counts.items())
-    
-    if len(labels)>1:
-        return True
 
-    return False
+    return len(number_counts) > 1
 
-def resolve_blended_result_case_1(counts,m):
+def check_outcome_condition_for_blended_case_1(counts,m):
 
     n= int(np.log2(m))+1
     keys=list(counts[0].keys())[0]
 
-    # print("origin: "+key)
     raw_result=keys
-    # print("after: "+raw_result)
+
     result=[raw_result[n*i:(i+1)*n] for i in range(m)]
-    # print(result)
-    result=[ int(item, 2) for item in result]
-    # print(result)
-    result=result[::-1] 
-    # print(result)
+  
+    result=[ int(item, 2) for item in result][::-1] 
+
     for item in result:
-        if item != 0 and item == m:
-            # print("true")
-            return True
-        elif item != 0 and item !=m:
-            # print("false")
-            return False
+        if item != 0:
+            return item == m
     return False
     
 
-def resolve_random_result_case_1(counts,high):
-    
-    check=False
-    keys=list(counts[0].keys())
+def check_outcome_condition_for_random_case_1(counts,high):
+    check = False
+    keys = list(counts[0].keys())[0][::-1]
+    high_index = high[0][0]
 
-    keys[0]=keys[0][::-1]
-    # print("result: "+keys[0])
-    # print("high: "+str(high[0]))
-    for i in range(len(keys[0])):
-        if keys[0][i]=='0' and i!=high[0][0]:
-            # check=False
-            break
-        elif keys[0][i]=='0' and i==high[0][0]:
-            check=True            
-   
+    for i, key in enumerate(keys):
+        if key == '0':
+            if i == high_index:
+                check = True
+            else:
+                break
     return check
 
-def resolve_random_result_case_2(counts):
+def check_outcome_condition_for_random_case_2(counts):
+    
     keys=list(counts[0].keys())
-    keys[0]=keys[0][::-1]
-
+    keys[0]=keys[0]
     for item in keys[0]:
         if item=='0':
             return True
-    
     return False
     
     
 def xor_binary_strings(str1, str2):
-    # Ensure both strings are the same length
+
     if len(str1) != len(str2):
         raise ValueError("Both strings must be of the same length")
 
-    # Perform XOR on each pair of characters from the two strings
     result = ''.join('1' if b1 != b2 else '0' for b1, b2 in zip(str1, str2))
-
+    
     return result
-def resolve_random_result_case_special(count_set,indices_set,m):
+
+
+def check_outcome_condition_for_random_case_special(count_set,indices_set,m):
     
     accept_time=0
     check_array=[0 for i in range(m)]
@@ -116,7 +86,7 @@ def resolve_random_result_case_special(count_set,indices_set,m):
     
         keys=list(count.keys())
         keys=keys[0][::-1]
-        # ans = ''.join('0' if i in item[1] else '1' for i in range(len(keys[0])))
+
         print("ans: "+str(indice))
         print(keys)
         for i in range(len(keys)):
@@ -131,32 +101,9 @@ def resolve_random_result_case_special(count_set,indices_set,m):
     accept_time=xor_result.count(0)
     return(accept_time) 
 
-# def resolve_random_result_case_special(count_set,m):
-    
-#     accept_time=0
-#     check_array=[0 for i in range(m)]
-#     correct = [0 if i <m/2 else 1 for i in range(m)]
-#     vote=[0 for _ in range(int(m))]
-#     for item in count_set:
-    
-#         keys=list(item[0].keys())
-#         keys=keys[0][::-1]
-#         # ans = ''.join('0' if i in item[1] else '1' for i in range(len(keys[0])))
-#         print("ans: "+str(item[1]))
-#         print(keys)
-#         for i in range(len(keys)):
-#             if keys[i]=='0':
-#                 vote[item[1][i]]+=1
-#     print(f'vote: {vote}')
-#     for item in top_half_indices(vote):
-#         check_array[item]=1
-#     print(check_array)
-#     print()
-#     xor_result = [a ^ b for a, b in zip(check_array, correct)]
-#     accept_time=xor_result.count(0)
-#     return(accept_time) 
+
        
-def resolve_blended_result_case_special(counts_set,m,gate_num_times):
+def check_outcome_condition_for_blended_case_special(counts_set,m,gate_num_times):
     accept_time=0
     vote=[0 for i in range(m)]
     check_array=[0 for i in range(m)]
@@ -189,7 +136,7 @@ def resolve_blended_result_case_special(counts_set,m,gate_num_times):
         
     return accept_time
 
-def resolve_blended_result_case_interweave(counts_set,m,get_num_times):
+def check_outcome_condition_for_interweave_case_special(counts_set,m,get_num_times):
     accept_time=0
     n= int(np.log2(m))+1
     check_array=[-1 for i in range(m)]
@@ -232,7 +179,7 @@ def resolve_blended_result_case_interweave(counts_set,m,get_num_times):
     return accept_time
 
 
-def resolve_blended_three_result(counts_set,m,permutation,round,special=True):
+def check_outcome_condition_for_blended_three_case_special(counts_set,m,permutation,round,special=True):
     
     table=[0]*m
     for key in counts_set:
@@ -293,33 +240,6 @@ def print_progress(current, total, bar_length=20):
     sys.stdout.write(progress_bar)
     sys.stdout.flush()
     
-def projector_html(dir_name,rotated_pro,top_num):
-    
-    html_content=""
-    with open(dir_name, 'a') as file:
-        
-        flat_matrix = rotated_pro.flatten()
-        magnitudes = np.abs(flat_matrix)
-        indices_of_largest = np.argpartition(magnitudes, -top_num)[-top_num:]
-        mask = np.zeros_like(magnitudes, dtype=bool)
-        mask[indices_of_largest] = True
-        modified_flat_matrix = np.where(mask, flat_matrix, 0)
-        # print(modified_flat_matrix)
-        # Reshaping back to the original matrix shape
-        modified_matrix = modified_flat_matrix.reshape(rotated_pro.shape)
-    # Iterate through the matrix row by row
-        # rotated_pro=np.abs(rotated_pro)
-        for row in modified_matrix:
-            # Create a string for the row
-            # html_content = html_content+' '.join(f"{np.abs(z):.4f}" for z in row)+"<br>"
-            for z in row:
-                if(z!=0):
-                    html_content=html_content+"<span style='color:red;'>"+f"{np.abs(z):.4f} "+"</span>"
-                else:
-                    html_content=html_content+f"{np.abs(z):.4f} "
-            html_content=html_content+"<br>"
-        html_content="<p>"+html_content+"</p>"
-        file.write(html_content)
 
 def top_half_indices(array):
     # Calculate the number of elements to select

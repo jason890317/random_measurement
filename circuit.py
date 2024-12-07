@@ -279,19 +279,19 @@ def random_sequences_circuit(povm, initial_state, measurement_implemented_time, 
     # Compute the density matrix of the initial_state
     roh = np.outer(initial_state, initial_state.conj().T)
 
-    # Shuffle POVM measurements_shuffled_indices for randomness
-    measurements_shuffled_indices = np.arange(len(povm))
-    np.random.shuffle(measurements_shuffled_indices)
-    povm = povm[measurements_shuffled_indices]  # Shuffle POVM elements
+    # Shuffle POVM indice for randomness
+    indice = np.arange(len(povm))
+    np.random.shuffle(indice)
+    povm = povm[indice]  # Shuffle POVM elements
 
     # Track POVM elements with probabilities exceeding the threshold
-    highest_pro_povm = []
+    highest_pro_povm_indice = []
 
     # Iterate through shuffled POVM elements
     for p in range(len(povm)):
         # Check if the POVM element's trace with the density matrix exceeds the threshold
         if np.trace(povm[p] @ roh) > (pro_h - 1e-07):
-            highest_pro_povm.append(p)
+            highest_pro_povm_indice.append(p)
 
         # Compute the complementary operator and construct a unitary
         p_inv = np.eye(dim_system) - povm[p]
@@ -307,8 +307,8 @@ def random_sequences_circuit(povm, initial_state, measurement_implemented_time, 
         # Measure ancilla qubits
         quantum_circuit.measure(ancilla_reg, classical_reg[p * num_ancilla_qubit:(p + 1) * num_ancilla_qubit])
     
-    # Also return the measurements_shuffled_indices of the highest probability POVM elements for further count the accepting probability in tool.py
-    return quantum_circuit, measurements_shuffled_indices
+    # Also return the indice of the highest probability POVM elements for further count the accepting probability in tool.py
+    return quantum_circuit, indice
 
 
 

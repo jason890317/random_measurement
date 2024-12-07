@@ -73,6 +73,7 @@ def generate_povm_elements(povm_set,number, dimension_of_povm, rank, rho, prob_r
 
             # Check if the generated matrix is a valid POVM element
             if np.allclose(temp @ temp, temp, atol=1e-14) and condition(np.trace(temp @ rho)):
+                # print(np.trace(temp @ rho))
                 povm_set.append(temp)  # Add to the POVM set if valid
 
             

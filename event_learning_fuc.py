@@ -1,9 +1,9 @@
 import numpy as np
 from tools import (
-    compute_probability_for_povm_set, resolve_blended_result_case_1, resolve_blended_result_case_2,
-    resolve_random_result_case_special, resolve_random_result_case_1, resolve_blended_result_case_special,
-    resolve_blended_result_case_interweave, generate_permutations, resolve_blended_three_result,
-    resolve_random_result_case_2
+    compute_probability_for_povm_set, check_outcome_condition_for_blended_case_1, check_outcome_condition_for_blended_case_2,
+    check_outcome_condition_for_random_case_special, check_outcome_condition_for_random_case_1, check_outcome_condition_for_blended_case_special,
+    check_outcome_condition_for_interweave_case_special, generate_permutations, check_outcome_condition_for_blended_three_case_special,
+    check_outcome_condition_for_random_case_2
 )
 from blended_measurement import (
     blended_measurement, inverse_blended_measurement, optimizing_blended_measurement, three_outcome_blended_measurement
@@ -40,28 +40,28 @@ def quantum_event_identification(copies, d, m, gate_num_times, povm_set, rho, ca
         counts_set, shuffled_indices_set = start_simulation(
             random_sequences_circuit, copies, povm_set, state, m, case_1_high, include_indices=True
         )
-        accept_time = resolve_random_result_case_special(counts_set, shuffled_indices_set, m)
+        accept_time = check_outcome_condition_for_random_case_special(counts_set, shuffled_indices_set, m)
 
     elif method in ['special_blended', 'optimizing_blended']:
         # Simulate using the 'special_blended' or 'optimizing_blended' method
         blended_set = (optimizing_blended_measurement(povm_set, d, m) if method == "optimizing_blended" 
                        else blended_measurement(povm_set, d, m))
         counts_set = start_simulation(blended_circuit, copies, blended_set, state, int(gate_num_times * m))
-        accept_time = resolve_blended_result_case_special(counts_set, m, gate_num_times)
+        accept_time = check_outcome_condition_for_blended_case_special(counts_set, m, gate_num_times)
 
     elif method == "interweave":
         # Simulate using the 'interweave' method
         blended_set = blended_measurement(povm_set, d, m)
         blended_set_inv = inverse_blended_measurement(povm_set, d, m)
         counts_set = start_simulation(interweave_blended_circuit, copies, blended_set, blended_set_inv, state, int(gate_num_times * m))
-        accept_time = resolve_blended_result_case_interweave(counts_set, m, gate_num_times)
+        accept_time = check_outcome_condition_for_interweave_case_special(counts_set, m, gate_num_times)
 
     elif method == "blended_three":
         # Simulate using the 'blended_three' method
         permutation = generate_permutations(m, int(5 * m))
         three_outcome_blended_set = three_outcome_blended_measurement(povm_set, d, m, permutation)
         counts_set = start_simulation(three_outcome_blended_circuit, copies, three_outcome_blended_set, state, int(5 * m))
-        accept_time = resolve_blended_three_result(counts_set, m, permutation, int(5 * m))
+        accept_time = check_outcome_condition_for_blended_three_case_special(counts_set, m, permutation, int(5 * m))
 
     experiment = accept_time / m  # Calculate experimental probability
     return {"theorem": 0, "experiment": experiment}
@@ -78,6 +78,7 @@ def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, sta
     - result: Dictionary containing theoretical and experimental results.
     """
     accept_time = 0  # Count of successful outcomes
+    fail_time = 0  # Count of failed outcomes
     povm_set_probability = compute_probability_for_povm_set(povm_set, rho, False)
     povm_set_probability = sorted(povm_set_probability, reverse=True)
 
@@ -92,15 +93,15 @@ def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, sta
         # Simulate the 'random' method
         for _ in range(test_time):
             
-            counts_set, shuffled_indices_set = start_simulation(
+            counts_set, indices = start_simulation(
                 random_sequences_circuit, copies, povm_set, state, m, case_1_high, include_indices=True
             )
             
             # check the acceptance of the result
-            if case == "1" and resolve_random_result_case_1(counts_set, shuffled_indices_set):
+            if case == "1" and check_outcome_condition_for_random_case_1(counts_set, indices):
                 accept_time += 1
-            elif case == "2" and resolve_random_result_case_2(counts_set):
-                accept_time += 1
+            elif case == "2" and check_outcome_condition_for_random_case_2(counts_set):
+                fail_time += 1
 
     elif method == 'blended':
         
@@ -116,17 +117,17 @@ def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, sta
             counts_set = start_simulation(blended_circuit, 1, blended_set, state, m)
             
             # check the acceptance of the result 
-            if case == "1" and resolve_blended_result_case_1(counts_set, m):
+            if case == "1" and check_outcome_condition_for_blended_case_1(counts_set, m):
                 accept_time += 1
-            elif case == "2" and resolve_blended_result_case_2(counts_set, m):
-                accept_time += 1
+            elif case == "2" and check_outcome_condition_for_blended_case_2(counts_set, m):
+                fail_time += 1
     
-    # Calculate experimental probability
-    experiment = accept_time / test_time  
-    
+    # Calculate experimental probability and return the results, both theoretical and experimental
     if case == "1":
+        experiment = accept_time / test_time 
         return {"theorem": at_least_pro.real, "experiment": experiment}
     elif case == "2":
+        experiment = fail_time / test_time
         return {"theorem": delta.real, "experiment": experiment}
 
 
