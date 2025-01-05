@@ -35,36 +35,51 @@ def quantum_event_identification(copies, d, m, gate_num_times, povm_set, rho, ca
     """
     accept_time = 0  # Count of successful outcomes
 
+    test_time_counts_set=[]
+    test_time_shuffled_indices_set=[]
+    
     if method == 'special_random':
         # Simulate using the 'special_random' method
-        counts_set, shuffled_indices_set = start_simulation(
-            random_sequences_circuit, copies, povm_set, state, m, case_1_high, include_indices=True
-        )
-        accept_time = check_outcome_condition_for_random_case_special(counts_set, shuffled_indices_set, m)
+        for _ in range(test_time):
+            counts_set, shuffled_indices_set = start_simulation(
+                random_sequences_circuit, copies, povm_set, state, m, case_1_high, include_indices=True
+            )
+            test_time_counts_set.append(counts_set)
+            test_time_shuffled_indices_set.append(shuffled_indices_set)
+        # print("test_time_counts_set: ", test_time_counts_set)
+        # print("test_time_shuffled_indices_set: ", test_time_shuffled_indices_set)
+        success_rate = check_outcome_condition_for_random_case_special(test_time_counts_set, test_time_shuffled_indices_set, m,test_time)
 
     elif method in ['special_blended', 'optimizing_blended']:
         # Simulate using the 'special_blended' or 'optimizing_blended' method
         blended_set = (optimizing_blended_measurement(povm_set, d, m) if method == "optimizing_blended" 
                        else blended_measurement(povm_set, d, m))
-        counts_set = start_simulation(blended_circuit, copies, blended_set, state, int(gate_num_times * m))
-        accept_time = check_outcome_condition_for_blended_case_special(counts_set, m, gate_num_times)
+        
+        for _ in range(test_time):
+            counts_set = start_simulation(blended_circuit, copies, blended_set, state, int(gate_num_times * m))
+            test_time_counts_set.append(counts_set)
+        success_rate = check_outcome_condition_for_blended_case_special(test_time_counts_set, m, gate_num_times,test_time)
 
     elif method == "interweave":
         # Simulate using the 'interweave' method
         blended_set = blended_measurement(povm_set, d, m)
         blended_set_inv = inverse_blended_measurement(povm_set, d, m)
-        counts_set = start_simulation(interweave_blended_circuit, copies, blended_set, blended_set_inv, state, int(gate_num_times * m))
-        accept_time = check_outcome_condition_for_interweave_case_special(counts_set, m, gate_num_times)
+        for _ in range(test_time):
+            counts_set = start_simulation(interweave_blended_circuit, copies, blended_set, blended_set_inv, state, int(gate_num_times * m))
+            test_time_counts_set.append(counts_set)
+        success_rate = check_outcome_condition_for_interweave_case_special(test_time_counts_set, m, gate_num_times,test_time)
 
     elif method == "blended_three":
         # Simulate using the 'blended_three' method
         permutation = generate_permutations(m, int(5 * m))
         three_outcome_blended_set = three_outcome_blended_measurement(povm_set, d, m, permutation)
-        counts_set = start_simulation(three_outcome_blended_circuit, copies, three_outcome_blended_set, state, int(5 * m))
-        accept_time = check_outcome_condition_for_blended_three_case_special(counts_set, m, permutation, int(5 * m))
+        for _ in range(test_time):
+            counts_set = start_simulation(three_outcome_blended_circuit, copies, three_outcome_blended_set, state, int(5 * m))
+            test_time_counts_set.append(counts_set)
+        success_rate = check_outcome_condition_for_blended_three_case_special(test_time_counts_set, m, permutation, int(5 * m),test_time)
 
-    experiment = accept_time / m  # Calculate experimental probability
-    return {"theorem": 0, "experiment": experiment}
+      # Calculate experimental probability
+    return {"theorem": 0, "experiment": success_rate}
 
 
 def quantum_event_finding(copies, d, m, gate_num_times, povm_set, rho, case, state, test_time, case_1_high, method):

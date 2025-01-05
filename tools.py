@@ -76,144 +76,195 @@ def xor_binary_strings(str1, str2):
     return result
 
 
-def check_outcome_condition_for_random_case_special(count_set,indices_set,m):
+def check_outcome_condition_for_random_case_special(test_time_count_set,test_time_indices_set,m,test_time):
     
-    accept_time=0
-    check_array=[0 for i in range(m)]
-    correct = [0 if i <m/2 else 1 for i in range(m)]
-    vote=[0 for _ in range(int(m))]
-    for count,indice in zip(count_set,indices_set):
-    
-        keys=list(count.keys())
-        keys=keys[0][::-1]
+   
+    test_time_check_array=[]
+    for i in range(test_time):
+        check_array=[0 for i in range(m)]
+        vote=[0 for _ in range(int(m))]
+        for count,indice in zip(test_time_count_set[i],test_time_indices_set[i]):
+        
+            keys=list(count.keys())
+            keys=keys[0][::-1]
 
-        print("ans: "+str(indice))
-        print(keys)
-        for i in range(len(keys)):
-            if keys[i]=='0':
-                vote[indice[i]]+=1
-    print(f'vote: {vote}')
-    for item in top_half_indices(vote):
-        check_array[item]=1
-    print(check_array)
-    print()
-    xor_result = [a ^ b for a, b in zip(check_array, correct)]
-    accept_time=xor_result.count(0)
-    return(accept_time) 
+            print("ans: "+str(indice))
+            print(keys)
+            for i in range(len(keys)):
+                if keys[i]=='0':
+                    vote[indice[i]]+=1
+        print(f'vote: {vote}')
+        for item in top_half_indices(vote):
+            check_array[item]=1
+        # print(check_array)
+        test_time_check_array.append(check_array)
+    print(test_time_check_array)
+        
+    correct = [0 if i <m/2 else 1 for i in range(m)]
+    success_rate=0
+    m_array=[[] for i in range(m)]
+    for i, check_array in enumerate(test_time_check_array):
+        for j in range(m):
+            m_array[j].append(check_array[j])
+    print(m_array)
+    
+    success_counter_set=[]
+    for i,item in enumerate(m_array):
+        success_counter=0 
+        for j in item:
+            if j==correct[i]:
+                success_counter+=1
+        success_counter_set.append(success_counter)
+        print(f'success_counter: {success_counter}')
+    success_counter = min(success_counter_set)
+    success_rate=success_counter/test_time
+    return(success_rate) 
 
 
        
-def check_outcome_condition_for_blended_case_special(counts_set,m,gate_num_times):
-    accept_time=0
-    vote=[0 for i in range(m)]
-    check_array=[0 for i in range(m)]
-    correct = [0 if i <m/2 else 1 for i in range(m)]
-    n= int(np.log2(m))+1
-    for key in counts_set:
-        # print("origin: "+list(key)[0])
-        raw_result=list(key)[0]
-        # print("after: "+raw_result)
-        result=[raw_result[n*i:(i+1)*n] for i in range(int(gate_num_times*m))]
-        # print(result)
-        result=[ int(item, 2) for item in result]
-        # print(result)
-        result=result[::-1] 
-        
-        print(result)
-
-        for item in result:
-            if item!=0:
-                vote[item-1]+=1
-        
-    # print(vote)
-    for item in top_half_indices(vote):
-        check_array[item]=1
-    print(check_array)
-    print(correct)
-    print()
-    xor_result = [a ^ b for a, b in zip(check_array, correct)]
-    accept_time=xor_result.count(0)
-        
-    return accept_time
-
-def check_outcome_condition_for_interweave_case_special(counts_set,m,get_num_times):
-    accept_time=0
-    n= int(np.log2(m))+1
-    check_array=[-1 for i in range(m)]
-    correct = [0 if i <m/2 else 1 for i in range(m)]
-    vote=[0 for _ in range(m) ]
-    for key in counts_set:
-        # print("origin: "+key)
-        raw_result=list(key)[0]
-        # print("after: "+raw_result)
-        result=[raw_result[n*i:(i+1)*n] for i in range(int(get_num_times*m))]
-        # print(result)
-        result=[ int(item, 2) for item in result]
-        # print(result)
-        result=result[::-1] 
-        
-        print(result)
-        
-        
-        for i in range(len(result)):
-            if result[i]!=0:
-                if i%2==0 and check_array[result[i]-1]==-1:
-                    # check_array[result[i]-1]=0
-                    vote[result[i]-1]-=1
-                elif check_array[result[i]-1]==-1:
-                    # check_array[result[i]-1]=1
-                    vote[result[i]-1]+=1
+def check_outcome_condition_for_blended_case_special(test_time_counts_set,m,gate_num_times,test_time):
+    test_time_check_array=[]
     
-    for i in range(len(vote)):
-        if(vote[i]==0):
-            check_array[i]=random.choice([0,1])
-        elif(vote[i]>0):
-            check_array[i]=1
-        elif(vote[i]<0):
-            check_array[i]=0
-    print(vote)
-    print(check_array)
-    # print(check_array)
-    xor_result = [a ^ b for a, b in zip(check_array, correct)]
-    accept_time=xor_result.count(0)
-    return accept_time
+    for i in range(test_time):
+        vote=[0 for i in range(m)]
+        check_array=[0 for i in range(m)]
+        correct = [0 if i <m/2 else 1 for i in range(m)]
+        n= int(np.log2(m))+1
+        for key in test_time_counts_set[i]:
+            # print("origin: "+list(key)[0])
+            raw_result=list(key)[0]
+            # print("after: "+raw_result)
+            result=[raw_result[n*i:(i+1)*n] for i in range(int(gate_num_times*m))]
+            # print(result)
+            result=[ int(item, 2) for item in result]
+            # print(result)
+            result=result[::-1] 
+            
+            print(result)
 
-
-def check_outcome_condition_for_blended_three_case_special(counts_set,m,permutation,round,special=True):
+            for item in result:
+                if item!=0:
+                    vote[item-1]+=1
+            
+        # print(vote)
+        for item in top_half_indices(vote):
+            check_array[item]=1
+        
+        test_time_check_array.append(check_array)
     
-    table=[0]*m
-    for key in counts_set:
-        keys=list(key)[0]
+    # print(test_time_check_array)
+   
+    correct = [0 if i <m/2 else 1 for i in range(m)]
+    success_rate=0
+    m_array=[[] for i in range(m)]
+    for i, check_array in enumerate(test_time_check_array):
+        for j in range(m):
+            m_array[j].append(check_array[j])
+    # print(m_array)
+    
+    success_counter_set=[]
+    for i,item in enumerate(m_array):
+        success_counter=0 
+        for j in item:
+            if j==correct[i]:
+                success_counter+=1
+        success_counter_set.append(success_counter)
+        print(f'success_counter: {success_counter}')
+    # success_counter = sum(success_counter_set) / len(success_counter_set)
+    success_counter = min(success_counter_set)
+    success_rate=success_counter/test_time
+    return(success_rate) 
+        
+
+def check_outcome_condition_for_interweave_case_special(test_time_counts_set,m,get_num_times,test_time):
+    
+    n= int(np.log2(m))+1
+    test_time_check_array=[]
+    for i in range(test_time):
+        check_array=[-1 for i in range(m)]
+        correct = [0 if i <m/2 else 1 for i in range(m)]
+        vote=[0 for _ in range(m) ]
+        for key in test_time_counts_set[i]:
+            # print("origin: "+key)
+            raw_result=list(key)[0]
+            # print("after: "+raw_result)
+            result=[raw_result[n*i:(i+1)*n] for i in range(int(get_num_times*m))]
+            # print(result)
+            result=[ int(item, 2) for item in result]
+            # print(result)
+            result=result[::-1] 
+            
+            print(result)
+            
+            
+            for i in range(len(result)):
+                if result[i]!=0:
+                    if i%2==0 and check_array[result[i]-1]==-1:
+                        # check_array[result[i]-1]=0
+                        vote[result[i]-1]-=1
+                    elif check_array[result[i]-1]==-1:
+                        # check_array[result[i]-1]=1
+                        vote[result[i]-1]+=1
+        
+        for i in range(len(vote)):
+            if(vote[i]==0):
+                check_array[i]=random.choice([0,1])
+            elif(vote[i]>0):
+                check_array[i]=1
+            elif(vote[i]<0):
+                check_array[i]=0
+        
+        test_time_check_array.append(check_array)
+    # print(test_time_check_array)
+    correct = [0 if i <m/2 else 1 for i in range(m)]
+    success_rate=0
+    m_array=[[] for i in range(m)]
+    for i, check_array in enumerate(test_time_check_array):
+        for j in range(m):
+            m_array[j].append(check_array[j])
+    # print(m_array)
+    
+    success_counter_set=[]
+    for i,item in enumerate(m_array):
+        success_counter=0 
+        for j in item:
+            if j==correct[i]:
+                success_counter+=1
+        success_counter_set.append(success_counter)
+        print(f'success_counter: {success_counter}')
+    # success_counter = sum(success_counter_set) / len(success_counter_set)
+    success_counter = min(success_counter_set)
+    success_rate=success_counter/test_time
+    return(success_rate) 
+
+def check_outcome_condition_for_blended_three_case_special(test_time_counts_set,m,permutation,round,test_time):
+    
+    test_time_check_array=[]
+    for i in range(test_time):
+        
+        table=[0]*m
+        for key in test_time_counts_set[i]:
+            keys=list(key)[0]
+                            
+            # print(keys)
+            result=[ int(keys[2*i:(i+1)*2],2) for i in range(round)]
+            result=result[::-1]
+            
+            print("result: "+ str(result))
+            for i in range(len(result)):
+                if result[i]==1:
+                    # print(f'permutation: {permutation[i]}')
+                    for j in range(len(permutation[i])):
                         
-        # print(keys)
-        result=[ int(keys[2*i:(i+1)*2],2) for i in range(round)]
-        result=result[::-1]
-        
-        print("result: "+ str(result))
-        for i in range(len(result)):
-            if result[i]==1:
-                # print(f'permutation: {permutation[i]}')
-                for j in range(len(permutation[i])):
-                    
-                    if permutation[i][j]==1:
-                        table[j]+=1
-            elif result[i]==2:
-                # print(f'permutation: {permutation[i]}')
-                for j in range(len(permutation[i])):
-                    
-                    if permutation[i][j]==2:
-                        table[j]+=1
-    if not special:
-        # print(table)
-        max_index = np.argmax(table)
-        # print(max_index)
-        number_counts = Counter(table)
-        # print(number_counts[table[max_index]])
-        if max_index==m-1 and number_counts[table[max_index]]==1:
-            accept+=1
-            # print(table)
-        
-    else:
+                        if permutation[i][j]==1:
+                            table[j]+=1
+                elif result[i]==2:
+                    # print(f'permutation: {permutation[i]}')
+                    for j in range(len(permutation[i])):
+                        
+                        if permutation[i][j]==2:
+                            table[j]+=1
+    
         print(table)
         
         check_array=[-1 for i in range(m)]
@@ -221,15 +272,36 @@ def check_outcome_condition_for_blended_three_case_special(counts_set,m,permutat
         
         for item in top_half_indices(table):
             check_array[item]=1
-        print(check_array)
+        
         for i in range(len(check_array)):
             if check_array[i]==-1:
                 check_array[i]=0
-        xor_result = [a ^ b for a, b in zip(check_array, correct)]
-        accept=xor_result.count(0)
-        
-    return accept
+        print(check_array)
+        test_time_check_array.append(check_array)
+    # print(test_time_check_array)
 
+    correct = [0 if i <m/2 else 1 for i in range(m)]
+    success_rate=0
+    m_array=[[] for i in range(m)]
+    for i, check_array in enumerate(test_time_check_array):
+        for j in range(m):
+            m_array[j].append(check_array[j])
+    # print(m_array)
+    
+    success_counter_set=[]
+    for i,item in enumerate(m_array):
+        success_counter=0 
+        for j in item:
+            if j==correct[i]:
+                success_counter+=1
+        success_counter_set.append(success_counter)
+        print(f'success_counter: {success_counter}')
+    # success_counter = sum(success_counter_set) / len(success_counter_set)
+    success_counter = min(success_counter_set)
+    success_rate=success_counter/test_time
+    return(success_rate) 
+    
+    
 
 def print_progress(current, total, bar_length=20):
     
@@ -316,7 +388,7 @@ def split_shadow_median(measurements, classical_shadow_set,K):
         # print(median)
         indices = np.where(item == median)[0]
         output.append(median)
-    for item in output:
-        print(item)
+    # for item in output:
+        # print(item)
         
     return output

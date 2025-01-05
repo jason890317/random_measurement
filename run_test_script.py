@@ -24,8 +24,29 @@ def run_experiment(test_data, povm_set, excuted_function, average_time, state, r
     theorem_raw_data = []
 
     for i in range(average_time):
-        function_arg = (test_data["copies"], test_data["dimension"], test_data["m"], povm_set[i], state) if test_data["method"] == "classical_shadow" else (
-            test_data["copies"], test_data["dimension"], test_data["m"], test_data["gate_num_time"], povm_set[i], roh_0, test_data["case"], state, test_time, case_1_high, test_data["method"])
+        if test_data["method"] == "classical_shadow":
+            function_arg = (
+            test_data["copies"], 
+            test_data["dimension"], 
+            test_data["m"], 
+            povm_set[i], 
+            state,
+            test_time
+            )
+        else:
+            function_arg = (
+            test_data["copies"], 
+            test_data["dimension"], 
+            test_data["m"], 
+            test_data["gate_num_time"], 
+            povm_set[i], 
+            roh_0, 
+            test_data["case"], 
+            state, 
+            test_time, 
+            case_1_high, 
+            test_data["method"]
+            )
         result = excuted_function(*function_arg)
         print(f'result:{result}')
         print(f'd: {test_data["dimension"]}, rank: {test_data["rank"]}, method: {test_data["method"]}, m: {test_data["m"]}, coef: {test_data["gate_num_time"]}, copies: {test_data["copies"]}')
